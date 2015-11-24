@@ -19,10 +19,27 @@ BoltFilterByGender::~BoltFilterByGender()
 
 }
 
-void BoltFilterByGender::run(Tuple& tuple )
+void BoltFilterByGender::run()
 {
-	if (tuple.getElement(1) == "male")
+
+	while(!killRunThread)
 	{
-		emit(tuple);
+		tupleQueueLock.lock();
+		if ( !tupleQueue.empty() )
+		{
+			Tuple tuple = tupleQueue.front();
+			tupleQueue.pop_front();
+			tupleQueueLock.unlock();
+
+			if (tuple.getElement(1) == "male")
+			{
+				emit(tuple);
+			}
+		}
+		else
+		{
+			tupleQueueLock.unlock();
+		}
 	}
+
 }

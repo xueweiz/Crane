@@ -16,16 +16,18 @@ private:
 	uint32_t taskId;
 	uint32_t parallel_level;
 
+	uint32_t port;
+
 	std::vector<Bolt> bolts;
 
 	Membership& membership;
 
 public: 
-	Crane(Membership& m);
+	Crane(Membership& m, uint32_t port);
 	~Crane();
 
 	void addSpout(Bolt& spout);
-	void addBolt (Bolt& spout);
+	void addBolt (Bolt& bolt);
 
 	void run();
 	

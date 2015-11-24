@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <list>
+#include <mutex>
 
 #include "crane_types.h"
 #include "Tuple.h"
@@ -13,7 +14,7 @@
 class Bolt
 {
 
-private: 
+protected: 
 
 	std::string name; 
 
@@ -26,25 +27,31 @@ private:
 	//std::vector<Bolt> subscriptors;
 	std::vector<std::string> subscriptorsAdd;
 
-	std::vector<std::string> tasksAdd; // Vector containig the tasks addresses
-
+	std::mutex tupleQueueLock;
 	std::list<Tuple> tupleQueue;
 
 	std::thread listening;
+	bool killListeningThread;
+
+	std::thread runThread;
+	bool killRunThread;
 
 	void listeningThread();
-
-protected:
 
 	CRANE_TaskType type;
 
 	void emit(Tuple& tuple);
 
 public: 
+
 	Bolt(std::string, unsigned int parallel_level);
 	virtual ~Bolt();
 
-	virtual void run(Tuple& tuple );
+
+	std::vector<std::string> tasksAdd; // Vector containig the tasks addresses
+	std::vector<uint32_t> tasksPort; // Vector containig the tasks addresses
+
+	virtual void run();
 
 	void subscribe(Bolt& bolt);
 
@@ -61,6 +68,8 @@ public:
 
 	void setPort(uint32_t port);
 	uint32_t getPort();
+
+	CRANE_TaskType getType();
 
 };
 

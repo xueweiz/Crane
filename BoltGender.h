@@ -16,7 +16,7 @@ public:
 	BoltFilterByGender(std::string name, unsigned int parallel_level);
 	virtual ~BoltFilterByGender();
 
-	virtual void run(Tuple& tuple );
+	virtual void run();
 };
 
 #endif

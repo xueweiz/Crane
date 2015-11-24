@@ -150,7 +150,7 @@ int main (int argc, char* argv[])
 
     if (isIntroducer)
     {
-        Crane crane(m);
+        Crane crane(m, port + 23);
 
         BoltFilterByGender spout("spout",1); // Create the spout which generates sentences
         BoltFilterByGender bolt1("bolt1", 3);
