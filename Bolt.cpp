@@ -20,15 +20,42 @@ Bolt::~Bolt()
 	listening.join(); // carefull here;
 }
 
-void Bolt::subscribe(Bolt& bolt)
+void Bolt::subscribe(Bolt& bolt, uint32_t port)
 {
 	//subscriptors.push_back(bolt);
 
-	std::vector<std::string> adds = bolt.getTasksAdd();
-	for (int i = 0; i < adds.size(); ++i)
+	assert(bolt.tasks.size() == bolt.getParallelLevel());
+
+	for (int i = 0; i < bolt.getParallelLevel(); ++i)
 	{
-		subscriptorsAdd.push_back(adds.at(i));
+		std::string address = bolt.tasks.at(i).ip_str;
+
+		int connectionToServer; //TCP connect
+
+		int ret = connect_to_server(address.c_str(), port, &connectionToServer);
+
+		while (ret != 0)
+		{
+			std::cout <<"Bolt::subscribe Cannot connect to... "<<address<< std::endl; 
+			sleep(2);
+	        //exit(0);
+		}
+	    
+	    {
+            CRANE_Message msg;
+
+            msg.msgType  = MSG_SUBSCRIPTION;
+            address.copy(msg.string, address.length(), 0);
+            msg.string[address.length()+1] = '\0';
+            msg.port = bolt.tasks.at(i).port;
+            msg.taskId = bolt.tasks.at(i).taskId;
+
+	        write(connectionToServer, &msg, sizeof(CRANE_Message));
+
+	        close(connectionToServer);
+	    }   
 	}
+
 }
 
 void Bolt::emit(Tuple& tuple)
@@ -41,13 +68,26 @@ void Bolt::emit(Tuple& tuple)
 	}
 }
 
+struct CRANE_TaskInfo Bolt::getTaskInfo(uint32_t index)
+{
+	assert(index < tasks.size());
+
+	return tasks.at(index);
+}
+
+void Bolt::addSubscriptor(std::string ip, uint32_t port)
+{
+	subscriptorsAdd.push_back(ip);
+	subscriptorsPort.push_back(port);
+}
+
 void Bolt::setPort(uint32_t port)
 {
 	this->port = port;
 
 	killListeningThread = true;
-	std::cout << "Waiting for thread to finish.. " << std::endl;
-	listening.join(); // carefull here;
+	//std::cout << "Waiting for thread to finish.. " << std::endl;
+	//listening.join(); // carefull here;
 
 	killListeningThread = false;
 	std::thread th2(&Bolt::listeningThread, this);
@@ -107,6 +147,11 @@ uint32_t Bolt::getTaskId()
 	return taskId;
 }
 
+void Bolt::setTaskId(uint32_t id)
+{
+	taskId = id;
+}
+
 CRANE_TaskType Bolt::getType()
 {
 	return type;
@@ -124,7 +169,7 @@ std::string Bolt::getName()
 
 std::string Bolt::getIPByTask(uint32_t task)
 {
-	assert(tasksAdd.size() == parallel_level);
+	assert(tasks.size() == parallel_level);
 	if (task > parallel_level)
 	{
 		std::cout << "Bolt::getIPByTask - task " << task << " does not exist" << std::endl;
@@ -132,10 +177,6 @@ std::string Bolt::getIPByTask(uint32_t task)
 		return "";
 	}
 
-	return tasksAdd.at(task);
+	return tasks.at(task).ip_str;
 }
 
-std::vector<std::string> Bolt::getTasksAdd()
-{
-	return tasksAdd;
-}

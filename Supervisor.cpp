@@ -13,7 +13,10 @@
 Supervisor::Supervisor(uint32_t port):
 	port(port)
 {
+    taskIdSeed = rand();
 
+    std::thread th(&Supervisor::createListeningThread, this);
+    listening.swap(th);
 }
 
 Supervisor::~Supervisor()
@@ -23,7 +26,10 @@ Supervisor::~Supervisor()
 
 void Supervisor::run()
 {
+    while(true)
+    {
 
+    }
 }
 
 void Supervisor::createListeningThread ()
@@ -36,7 +42,7 @@ void Supervisor::createListeningThread ()
         size_t ret;
         int connFd = listen_socket(listenFd);
 
-        logFile<<"listeningThread: someone is contacting me... "<< std::endl;
+        //logFile<<"listeningThread: someone is contacting me... "<< std::endl;
 
         CRANE_Message msg;
 
@@ -51,14 +57,41 @@ void Supervisor::createListeningThread ()
         	{
         		BoltFilterByGender* task =  new BoltFilterByGender("task_gender",1);
         		task->setPort(portCounter++);
+                task->setTaskId(taskIdSeed++);
         		bolts.push_back((Bolt*)task);	
 
         		msg.msgType = MSG_CREATE_ACK;
         		msg.port = task->getPort();
+                msg.taskId = task->getTaskId();
 
         		write(connFd, &msg, sizeof(CRANE_Message));
         	}
+
+            std::cout << "Task created!" << std::endl;
         }
+        else if (msgType == MSG_SUBSCRIPTION)
+        {
+            bool found = false;
+            std::string ip(msg.string);
+            for (int i = 0; i < bolts.size(); ++i)
+            {
+                if (bolts.at(i)->getTaskId() == msg.taskId)
+                {
+                    found = true;
+                    bolts.at(i)->addSubscriptor(ip,msg.port);
+                }
+            }
+
+            if(!found)
+            {
+                std::cout << "Supervisor::createListeningThread task not found" << std::endl;
+                exit(0);
+            }
+
+            std::cout << "Subscription added!: " << ip << " port: " << msg.port << std::endl;
+        }
+
+        
 
 
         close(connFd);

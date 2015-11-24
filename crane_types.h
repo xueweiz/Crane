@@ -6,6 +6,7 @@ typedef enum CRANE_MessageType
     MSG_CREATE_TASK,
     MSG_DELETE_TASK,
     MSG_CREATE_ACK,
+    MSG_SUBSCRIPTION,
     
     MSG_TASK_EMPTY
 } crane_MessageType;
@@ -21,16 +22,22 @@ struct CRANE_Message
 {
 	CRANE_MessageType msgType;
 	CRANE_TaskType 	  taskType;
+	uint32_t taskId;
 	uint32_t port;
-	uint32_t number_in;
-	uint32_t number_out;
-	char string_in [200];
-	char string_out[200];
+	uint32_t number;
+	char string[200];
 };
 
 struct CRANE_TupleMessage 
 {
 	char buffer [512];
+};
+
+struct CRANE_TaskInfo
+{
+	uint32_t taskId;
+	std::string ip_str;
+	uint32_t port;
 };
 
 #endif

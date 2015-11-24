@@ -26,6 +26,7 @@ protected:
 
 	//std::vector<Bolt> subscriptors;
 	std::vector<std::string> subscriptorsAdd;
+	std::vector<uint32_t> subscriptorsPort;
 
 	std::mutex tupleQueueLock;
 	std::list<Tuple> tupleQueue;
@@ -47,16 +48,18 @@ public:
 	Bolt(std::string, unsigned int parallel_level);
 	virtual ~Bolt();
 
-
-	std::vector<std::string> tasksAdd; // Vector containig the tasks addresses
-	std::vector<uint32_t> tasksPort; // Vector containig the tasks addresses
-
 	virtual void run();
 
-	void subscribe(Bolt& bolt);
+	std::vector<struct CRANE_TaskInfo> tasks;
+
+	void subscribe(Bolt& bolt, uint32_t port);
+
+	void addSubscriptor(std::string ip, uint32_t port);
 
 	uint32_t getBoltId();
 	uint32_t getTaskId();
+
+	void setTaskId(uint32_t id);
 
 	uint32_t getParallelLevel();
 
@@ -64,12 +67,12 @@ public:
 
 	std::string getIPByTask(uint32_t task);
 
-	std::vector<std::string> getTasksAdd();
-
 	void setPort(uint32_t port);
 	uint32_t getPort();
 
 	CRANE_TaskType getType();
+
+	struct CRANE_TaskInfo getTaskInfo(uint32_t index);
 
 };
 

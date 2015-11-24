@@ -115,6 +115,10 @@ void listeningCin(Membership* m, FileSystem* fs)
             std::cout << "Local Files List: " << std::endl;
             std::cout << fs->getFileList() << std::endl;
         }
+        else if (input.compare("crane") == 0)
+        {
+
+        }
         else{
             std::cout << "PLEASE CHECK AGAIN THE POSSIBLE OPTIONS" << std::endl;
         }
@@ -131,50 +135,57 @@ int main (int argc, char* argv[])
     system("rm files/*");
     system("clear");
 
+    int port = atoi(argv[1]);
+    bool isIntroducer = atoi(argv[2]);
+    int membershipPort = port;
+    int filesystemPort = port+21;
+    int cranePort      = port+23;
+
     std::cout << std::endl << "CS425 - MP4: Crane System" ;
     std::cout << std::endl << std::endl;
 
     logFile.open("log.log");
     logFile << "Inicializing! " << std::endl;
 
-    int port = atoi(argv[1]);
-    bool isIntroducer = atoi(argv[2]);
-
     Membership m(isIntroducer, port);
-    FileSystem fs (port + 21, m);
+    FileSystem fs (filesystemPort, m);
 
     std::thread cinListening(listeningCin, &m, &fs);
-    cinListening.join();
+    //cinListening.join();
 
     // Create Crane 
 
     if (isIntroducer)
     {
-        Crane crane(m, port + 23);
+        Crane crane(m, cranePort);
 
-        BoltFilterByGender spout("spout",1); // Create the spout which generates sentences
-        BoltFilterByGender bolt1("bolt1", 3);
+        //BoltFilterByGender spout("spout",1); // Create the spout which generates sentences
+        BoltFilterByGender bolt1("bolt1", 4);
         BoltFilterByGender bolt2("bolt2", 4);
+
+        std::cout << "Bolt1 created" << std::endl;
+        //BoltFilterByGender bolt2("bolt2", 4);
         //BoltSink sink("sink", 4);
 
-        uint32_t spout_paralell = 7;
-        crane.addSpout(spout);
+        //crane.addSpout(spout);
         crane.addBolt(bolt1); // This will load information about ips.
         crane.addBolt(bolt2);
 
-        spout.subscribe(bolt1);
-        bolt1.subscribe(bolt2);
+        //spout.subscribe(bolt1);
+        bolt2.subscribe(bolt1, cranePort);
+        //bolt1.subscribe(bolt2);
         //bolt2.subscribe(sink);
 
         crane.run();
     }
     else
     {
-        Supervisor supervisor(port + 23);
+        Supervisor supervisor(cranePort);
 
         supervisor.run();
     }
 
+    cinListening.join();
 
     return 0;
 }

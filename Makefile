@@ -9,7 +9,7 @@ SRC += BoltGender.cpp
 
 CC_FLAGS = -pthread -std=c++11
 
-EXE = membership
+EXE = crane
 
 release:$(SRC)
 	$(CC)    $(SRC) $(CC_FLAGS) -o $(EXE) 

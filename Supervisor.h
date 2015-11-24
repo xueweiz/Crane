@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <thread>
 
 #include "Bolt.h"
 #include "crane_types.h"
@@ -20,6 +21,10 @@ private:
 	uint32_t port;
 	uint32_t portCounter;
 	std::vector<Bolt* > bolts;
+
+	uint32_t taskIdSeed;
+
+	std::thread listening;
 
 public: 
 	Supervisor(uint32_t port);

@@ -32,24 +32,32 @@ void Crane::addSpout(Bolt& spout)
 
 void Crane::addBolt(Bolt& bolt)
 {
-
 	std::vector<Node> nodes = membership.getMembershipList();
 
+	while (nodes.size() <= 1)
+	{
+		std::cout << "Crane::addBolt - No other machines present" << std::endl;
+		sleep(5);
+		nodes = membership.getMembershipList();
+	}
+	
 	for (int i = 0; i < bolt.getParallelLevel(); ++i)
 	{
-		uint32_t nodeId = rand() % nodes.size();
+		uint32_t nodeId = rand() % (nodes.size()-1) + 1;
 
 		std::string address = nodes.at(nodeId).ip_str;
 
 		int connectionToServer; //TCP connect
 
-	    int ret = connect_to_server(address.c_str(), port, &connectionToServer);
-	    if(ret!=0)
-	    {
-	        std::cout <<"Crane::addBolt Cannot connect to "<<address<< std::endl; 
-	        exit(0);
-	    }
-	    else
+		int ret = connect_to_server(address.c_str(), port, &connectionToServer);
+
+		while (ret != 0)
+		{
+			std::cout <<"Crane::addBolt Cannot connect to... "<<address<< std::endl; 
+			sleep(2);
+	        //exit(0);
+		}
+	    
 	    {
             CRANE_Message msg;
 
@@ -66,9 +74,12 @@ void Crane::addBolt(Bolt& bolt)
 	        	exit(0);
 	        }
 
-	        bolt.tasksAdd.push_back(address);
-	        bolt.tasksPort.push_back(msg.port);
-
+	        struct CRANE_TaskInfo newtask;
+	        newtask.ip_str = address;
+	        newtask.port = msg.port;
+	        newtask.taskId = msg.taskId;
+	        bolt.tasks.push_back(newtask);
+	        
 	        close(connectionToServer);
 	    }   
 	}
@@ -77,5 +88,8 @@ void Crane::addBolt(Bolt& bolt)
 
 void Crane::run ()
 {
+	while(true)
+	{
 
+	}
 }
