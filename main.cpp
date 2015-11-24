@@ -11,6 +11,10 @@
 #include "Membership.h"
 #include "FileSystem.h"
 
+#include "Crane.h"
+#include "Supervisor.h"
+#include "BoltGender.h"
+
 using namespace std;
 
 std::ofstream logFile;
@@ -127,7 +131,7 @@ int main (int argc, char* argv[])
     system("rm files/*");
     system("clear");
 
-    std::cout << std::endl << "CS425 - MP3: Distributed File System" ;
+    std::cout << std::endl << "CS425 - MP4: Crane System" ;
     std::cout << std::endl << std::endl;
 
     logFile.open("log.log");
@@ -141,6 +145,36 @@ int main (int argc, char* argv[])
 
     std::thread cinListening(listeningCin, &m, &fs);
     cinListening.join();
+
+    // Create Crane 
+
+    if (isIntroducer)
+    {
+        Crane crane(m);
+
+        BoltFilterByGender spout("spout",1); // Create the spout which generates sentences
+        BoltFilterByGender bolt1("bolt1", 3);
+        BoltFilterByGender bolt2("bolt2", 4);
+        //BoltSink sink("sink", 4);
+
+        uint32_t spout_paralell = 7;
+        crane.addSpout(spout);
+        crane.addBolt(bolt1); // This will load information about ips.
+        crane.addBolt(bolt2);
+
+        spout.subscribe(bolt1);
+        bolt1.subscribe(bolt2);
+        //bolt2.subscribe(sink);
+
+        crane.run();
+    }
+    else
+    {
+        Supervisor supervisor(port + 23);
+
+        supervisor.run();
+    }
+
 
     return 0;
 }
