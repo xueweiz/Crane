@@ -28,6 +28,7 @@ void Crane::addBolt(Bolt& bolt)
 {
 	std::vector<Node> nodes = membership.getMembershipList();
 
+	static uint32_t nodeIdx = 0;
 	while (nodes.size() <= 1)
 	{
 		std::cout << "Crane::addBolt - No other machines present" << std::endl;
@@ -37,7 +38,7 @@ void Crane::addBolt(Bolt& bolt)
 	
 	for (int i = 0; i < bolt.getParallelLevel(); ++i)
 	{
-		uint32_t nodeId = rand() % (nodes.size()-1) + 1;
+		uint32_t nodeId = (nodeIdx++) % (nodes.size()-1) + 1;
 
 		std::string address = nodes.at(nodeId).ip_str;
 
@@ -48,7 +49,7 @@ void Crane::addBolt(Bolt& bolt)
 		while (ret != 0)
 		{
 			std::cout <<"Crane::addBolt Cannot connect to... "<<address<< std::endl; 
-			sleep(2);
+			sleep(1);
 	        //exit(0);
 		}
 	    

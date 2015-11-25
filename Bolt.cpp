@@ -43,7 +43,7 @@ void Bolt::subscribe(Bolt& bolt, uint32_t port)
 			while (ret != 0)
 			{
 				std::cout <<"Bolt::subscribe Cannot connect to... "<<address<< std::endl; 
-				sleep(2);
+				sleep(1);
 		        //exit(0);
 			}
 		    
@@ -80,12 +80,13 @@ void Bolt::subscribe2Spout(Bolt& bolt, uint32_t port)
 
 void Bolt::emit(Tuple& tuple)
 {
-	std::cout << "emiting tuple: " << tuple.getSingleStringComa() << std::endl;
-
 	if (subscriptorsAdd.size() == 0)
 	{
-		std::cout << boltId << " - " << taskId <<" - Noone to emirt to!" << std::endl;
+		std::cout << boltId << " - " << taskId <<" - Noone to emit to!" << std::endl;
+		return;
 	}
+
+	std::cout << "emiting tuple: " << tuple.getSingleStringComa() << std::endl;
 
 	for (int i = 0; i < subscriptorsAdd.size(); ++i)
 	{

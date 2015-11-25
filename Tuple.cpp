@@ -43,6 +43,16 @@ std::string Tuple::getElement(int element)
 	return elements.at(element);
 }
 
+void Tuple::setElement(int element, std::string str)
+{
+	if (element > elements.size())
+	{
+		std::cout << "Element does not exists" << std::endl;
+	}
+
+	elements.at(element) = str;
+}
+
 std::string Tuple::getSingleString()
 {
 	std::stringstream ss;

@@ -27,7 +27,7 @@ void SpoutTwits::run()
 
 void SpoutTwits::generateTuples()
 {
-
+	uint32_t counter = 0;
 	while(true)
 	{
 		std::stringstream ss;
@@ -50,11 +50,11 @@ void SpoutTwits::generateTuples()
 			ss << "female\n";
 		}
 
-		ss << rand() % 100 << "\0";
+		ss << counter++ << "\0";
 
 		Tuple imaginary(ss.str());
 		emit(imaginary);
-		sleep(5);
+		//sleep(5);
 	}
 
 

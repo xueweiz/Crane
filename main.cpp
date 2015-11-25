@@ -164,6 +164,7 @@ int main (int argc, char* argv[])
         srand (time(NULL));
         BoltFilterByGender bolt1("bolt1", 1);
         BoltFilterByGender bolt2("bolt2", 1);
+        BoltFilterByGender bolt3("bolt3", 1);
 
         std::cout << "Bolt1 created" << std::endl;
         //BoltFilterByGender bolt2("bolt2", 4);
@@ -172,10 +173,12 @@ int main (int argc, char* argv[])
         crane.addSpout(spout);
         crane.addBolt(bolt1); // This will load information about ips.
         crane.addBolt(bolt2);
+        crane.addBolt(bolt3);
 
         //bolt1.subscribe(spout);
         spout.subscribe2Spout(bolt1, cranePort);
         bolt2.subscribe(bolt1, cranePort);
+        bolt3.subscribe(bolt2, cranePort);
         //bolt1.subscribe(bolt2);
         //bolt2.subscribe(sink);
 
