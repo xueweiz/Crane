@@ -6,6 +6,7 @@
 
 #include "Membership.h"
 #include "Bolt.h"
+#include "Spout.h"
 #include "crane_types.h"
 
 class Crane
@@ -13,13 +14,11 @@ class Crane
 
 private: 
 	uint32_t CraneId;
-	uint32_t taskId;
-	uint32_t parallel_level;
 
 	uint32_t port;
 
 	std::vector<Bolt> bolts;
-	std::vector<Bolt*> spouts;
+	std::vector<Spout*> spouts;
 
 	Membership& membership;
 
@@ -27,7 +26,7 @@ public:
 	Crane(Membership& m, uint32_t port);
 	~Crane();
 
-	void addSpout(Bolt& spout);
+	void addSpout(Spout& spout);
 	void addBolt (Bolt& bolt);
 
 	void run();

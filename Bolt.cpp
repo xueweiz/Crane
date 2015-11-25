@@ -104,6 +104,7 @@ void Bolt::emit(Tuple& tuple)
             CRANE_TupleMessage msg;
             memset(msg.buffer,0,512);
 
+            msg.more = 0;
             std::string str2Send = tuple.getSingleString();
             str2Send.copy(msg.buffer,str2Send.length(),0);
             std::string sent(msg.buffer);
@@ -167,20 +168,29 @@ void Bolt::listeningThread()
     {
     	size_t ret;
     	int connFd = listen_socket(listenFd);
+    	//std::cout << "Conected"<< std::endl;
         
-        CRANE_TupleMessage msg;
-        memset(msg.buffer,0,512);
+        while (true) // this is dangeorus
+        {
+        	CRANE_TupleMessage msg;
+        	memset(msg.buffer,0,512);
+			ret = read(connFd, &msg, sizeof(CRANE_TupleMessage));
 
-        ret = read(connFd, &msg, sizeof(CRANE_TupleMessage));
+	        std::string newTuple (msg.buffer);
+	        Tuple tuple(newTuple);
+	        std::cout << "Received: " << tuple.getSingleStringComa() << std::endl;
+	        //std::cout << "Received: " << std::endl;
 
-        std::string newTuple (msg.buffer);
-        Tuple tuple(newTuple);
-        std::cout << "Received: " << tuple.getSingleStringComa() << std::endl;
+	        tupleQueueLock.lock();
+	        tupleQueue.push_back(tuple);
+	        tupleQueueLock.unlock();
 
-        tupleQueueLock.lock();
-        tupleQueue.push_back(tuple);
-        tupleQueueLock.unlock();
-
+	        if (msg.more == 0)
+	        {
+	        	break;
+	        }
+        }
+        
         close(connFd);
     }
 

@@ -175,12 +175,12 @@ int main (int argc, char* argv[])
         crane.addBolt(bolt2);
         crane.addBolt(bolt3);
 
-        //bolt1.subscribe(spout);
-        spout.subscribe2Spout(bolt1, cranePort);
+        // Spout subscribe bolts
+        spout.subscribe(bolt1, cranePort);
+
+        //Bolt subscribe itself to other bolts, different from spouts
         bolt2.subscribe(bolt1, cranePort);
         bolt3.subscribe(bolt2, cranePort);
-        //bolt1.subscribe(bolt2);
-        //bolt2.subscribe(sink);
 
         sleep(10);
         crane.run();

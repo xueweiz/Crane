@@ -32,6 +32,9 @@ struct CRANE_Message
 struct CRANE_TupleMessage 
 {
 	char buffer [512];
+	// How many more messages are missing. 
+	//0 means it is only one
+	char more; 
 };
 
 struct CRANE_TaskInfo

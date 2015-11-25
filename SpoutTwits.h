@@ -4,10 +4,9 @@
 #include <string>
 #include <vector>
 
-#include "Bolt.h"
+#include "Spout.h"
 
-
-class SpoutTwits : public Bolt
+class SpoutTwits : public Spout
 {
 
 private: 

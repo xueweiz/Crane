@@ -19,7 +19,7 @@ Crane::~Crane()
 
 }
 
-void Crane::addSpout(Bolt& spout)
+void Crane::addSpout(Spout& spout)
 {
 	spouts.push_back(&spout);	
 }

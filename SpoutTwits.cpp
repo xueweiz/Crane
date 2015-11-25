@@ -9,7 +9,7 @@
 
 
 SpoutTwits::SpoutTwits(std::string name, unsigned int parallel_level)
-	: Bolt(name, parallel_level)
+	: Spout(name, parallel_level)
 {
 	//type = CRANE_TASK_GENDER;
 }
