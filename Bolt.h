@@ -41,8 +41,6 @@ protected:
 
 	CRANE_TaskType type;
 
-	void emit(Tuple& tuple);
-
 public: 
 
 	Bolt(std::string, unsigned int parallel_level);
@@ -50,9 +48,14 @@ public:
 
 	virtual void run();
 
+	virtual void generateTuples();
+
+	void emit(Tuple& tuple);
+
 	std::vector<struct CRANE_TaskInfo> tasks;
 
 	void subscribe(Bolt& bolt, uint32_t port);
+	void subscribe2Spout(Bolt& bolt, uint32_t port);
 
 	void addSubscriptor(std::string ip, uint32_t port);
 

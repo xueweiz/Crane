@@ -21,7 +21,6 @@ BoltFilterByGender::~BoltFilterByGender()
 
 void BoltFilterByGender::run()
 {
-
 	while(!killRunThread)
 	{
 		tupleQueueLock.lock();

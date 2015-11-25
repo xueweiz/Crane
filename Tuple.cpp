@@ -19,22 +19,12 @@ Tuple::Tuple(std::vector<std::string> v) :
 Tuple::Tuple(std::string str) 
 {
 	std::stringstream ss(str);
+	std::string item;
 
-	std::string aux;
-
-	std::getline(ss,aux,'\0'); // Here we remove '\0'
-
-	std::stringstream ss2(aux);
-
-	elements.clear();
-
-	while(aux.length() > 0)
+	while (std::getline(ss, item) ) 
 	{
-		aux = "";
-		std::getline(ss,aux);
-		elements.push_back(aux);
-	}
-
+        elements.push_back(item);
+    }
 }
 
 Tuple::~Tuple()
@@ -53,7 +43,7 @@ std::string Tuple::getElement(int element)
 	return elements.at(element);
 }
 
-std::string Tuple::getString4Send()
+std::string Tuple::getSingleString()
 {
 	std::stringstream ss;
 	for (int i = 0; i < elements.size(); ++i)
@@ -63,4 +53,18 @@ std::string Tuple::getString4Send()
 	ss << "\0";
 
 	return ss.str();
+}
+
+std::string Tuple::getSingleStringComa()
+{
+	std::stringstream ss;
+	for (int i = 0; i < elements.size(); ++i)
+	{
+		ss << elements.at(i) << ",";
+	}
+	std::string ret = ss.str();
+	ret.pop_back();
+	//ret.push_back('\n');
+
+	return ret;
 }

@@ -13,7 +13,7 @@
 Supervisor::Supervisor(uint32_t port):
 	port(port)
 {
-    taskIdSeed = rand();
+    taskIdSeed = rand() % 1000;
 
     std::thread th(&Supervisor::createListeningThread, this);
     listening.swap(th);
@@ -26,10 +26,12 @@ Supervisor::~Supervisor()
 
 void Supervisor::run()
 {
+
     while(true)
     {
 
     }
+
 }
 
 void Supervisor::createListeningThread ()
@@ -67,7 +69,7 @@ void Supervisor::createListeningThread ()
         		write(connFd, &msg, sizeof(CRANE_Message));
         	}
 
-            std::cout << "Task created!" << std::endl;
+            std::cout << "Task created: " <<  msg.taskId << " - " << msg.boltId  << " at port " << msg.port << std::endl;
         }
         else if (msgType == MSG_SUBSCRIPTION)
         {
@@ -88,7 +90,7 @@ void Supervisor::createListeningThread ()
                 exit(0);
             }
 
-            std::cout << "Subscription added!: " << ip << " port: " << msg.port << std::endl;
+            std::cout << "Subscription added!: " << msg.taskId << " - " << msg.boltId << " " << ip << " port: " << msg.port << std::endl;
         }
 
         

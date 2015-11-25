@@ -14,6 +14,7 @@
 #include "Crane.h"
 #include "Supervisor.h"
 #include "BoltGender.h"
+#include "SpoutTwits.h"
 
 using namespace std;
 
@@ -159,23 +160,26 @@ int main (int argc, char* argv[])
     {
         Crane crane(m, cranePort);
 
-        //BoltFilterByGender spout("spout",1); // Create the spout which generates sentences
-        BoltFilterByGender bolt1("bolt1", 4);
-        BoltFilterByGender bolt2("bolt2", 4);
+        SpoutTwits spout("spout",1); // Create the spout which generates sentences
+        srand (time(NULL));
+        BoltFilterByGender bolt1("bolt1", 1);
+        BoltFilterByGender bolt2("bolt2", 1);
 
         std::cout << "Bolt1 created" << std::endl;
         //BoltFilterByGender bolt2("bolt2", 4);
         //BoltSink sink("sink", 4);
 
-        //crane.addSpout(spout);
+        crane.addSpout(spout);
         crane.addBolt(bolt1); // This will load information about ips.
         crane.addBolt(bolt2);
 
-        //spout.subscribe(bolt1);
+        //bolt1.subscribe(spout);
+        spout.subscribe2Spout(bolt1, cranePort);
         bolt2.subscribe(bolt1, cranePort);
         //bolt1.subscribe(bolt2);
         //bolt2.subscribe(sink);
 
+        sleep(10);
         crane.run();
     }
     else

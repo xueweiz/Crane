@@ -22,6 +22,7 @@ struct CRANE_Message
 {
 	CRANE_MessageType msgType;
 	CRANE_TaskType 	  taskType;
+	uint32_t boltId;
 	uint32_t taskId;
 	uint32_t port;
 	uint32_t number;

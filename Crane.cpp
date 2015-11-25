@@ -21,13 +21,7 @@ Crane::~Crane()
 
 void Crane::addSpout(Bolt& spout)
 {
-	std::vector<Node> nodes = membership.getMembershipList();
-
-	for (int i = 0; i < spout.getParallelLevel(); ++i)
-	{
-		uint32_t nodeId = rand() % nodes.size();
-	}
-
+	spouts.push_back(&spout);	
 }
 
 void Crane::addBolt(Bolt& bolt)
@@ -63,6 +57,7 @@ void Crane::addBolt(Bolt& bolt)
 
             msg.taskType = bolt.getType();
             msg.msgType  = MSG_CREATE_TASK;
+            msg.boltId   = bolt.getBoltId();
 
 	        ret = write(connectionToServer, &msg, sizeof(CRANE_Message));
 
@@ -79,7 +74,7 @@ void Crane::addBolt(Bolt& bolt)
 	        newtask.port = msg.port;
 	        newtask.taskId = msg.taskId;
 	        bolt.tasks.push_back(newtask);
-	        
+
 	        close(connectionToServer);
 	    }   
 	}
@@ -88,6 +83,11 @@ void Crane::addBolt(Bolt& bolt)
 
 void Crane::run ()
 {
+	for (int i = 0; i < spouts.size(); ++i)
+	{
+		spouts.at(i)->run();
+	}
+
 	while(true)
 	{
 

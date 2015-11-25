@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <unistd.h>
 
 
 class Tuple
@@ -19,7 +20,8 @@ public:
 
 	std::string getElement(int element);
 
-	std::string getString4Send();
+	std::string getSingleString();
+	std::string getSingleStringComa();
 
 };
 

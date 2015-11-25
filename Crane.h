@@ -19,6 +19,7 @@ private:
 	uint32_t port;
 
 	std::vector<Bolt> bolts;
+	std::vector<Bolt*> spouts;
 
 	Membership& membership;
 
