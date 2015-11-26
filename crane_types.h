@@ -14,6 +14,7 @@ typedef enum CRANE_MessageType
 typedef enum CRANE_TaskType
 {
     CRANE_TASK_GENDER,
+    CRANE_TASK_SPLIT_GENDER,
     
     CRANE_TASK_EMPTY
 } crane_TaskType;
@@ -42,6 +43,12 @@ struct CRANE_TaskInfo
 	uint32_t taskId;
 	std::string ip_str;
 	uint32_t port;
+};
+
+struct BoltSubscriptor
+{
+	uint32_t boltId;
+	std::vector<struct CRANE_TaskInfo> tasks;
 };
 
 #endif

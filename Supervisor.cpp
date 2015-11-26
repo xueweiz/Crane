@@ -7,6 +7,7 @@
 #include "connections.h"
 #include "Supervisor.h"
 #include "BoltGender.h"
+#include "BoltSplitGender.h"
 
 #define logFile std::cout
 
@@ -55,19 +56,31 @@ void Supervisor::createListeningThread ()
         
         if (msgType == MSG_CREATE_TASK)
         {
+            Bolt* task;
         	if (taskType == CRANE_TASK_GENDER)
         	{
-        		BoltFilterByGender* task =  new BoltFilterByGender("task_gender",1);
-        		task->setPort(portCounter++);
-                task->setTaskId(taskIdSeed++);
-        		bolts.push_back((Bolt*)task);	
-
-        		msg.msgType = MSG_CREATE_ACK;
-        		msg.port = task->getPort();
-                msg.taskId = task->getTaskId();
-
-        		write(connFd, &msg, sizeof(CRANE_Message));
+        		task = new BoltFilterByGender("task_gender",1);
         	}
+            else if (taskType == CRANE_TASK_SPLIT_GENDER)
+            {
+                task = new BoltSplitGender("task_split_gender",1);
+            }
+            else
+            {
+                std::cout << "Supervisor::createListeningThread task type not found" << std::endl;
+                exit(0);
+            }
+
+            task->setPort(portCounter++);
+            task->setTaskId(taskIdSeed++);
+            task->setParallelId(msg.taskId);
+            bolts.push_back((Bolt*)task);   
+
+            msg.msgType = MSG_CREATE_ACK;
+            msg.port = task->getPort();
+            msg.taskId = task->getTaskId();
+
+            write(connFd, &msg, sizeof(CRANE_Message));
 
             std::cout << "Task created: " <<  msg.taskId << " - " << msg.boltId  << " at port " << msg.port << std::endl;
         }
@@ -80,7 +93,7 @@ void Supervisor::createListeningThread ()
                 if (bolts.at(i)->getTaskId() == msg.taskId)
                 {
                     found = true;
-                    bolts.at(i)->addSubscriptor(ip,msg.port);
+                    bolts.at(i)->addSubscriptor(ip,msg.port, msg.boltId);
                 }
             }
 

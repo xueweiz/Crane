@@ -4,7 +4,6 @@
 #include <sstream>
 #include <assert.h>
 
-
 #include "connections.h"
 #include "Crane.h"
 
@@ -59,6 +58,7 @@ void Crane::addBolt(Bolt& bolt)
             msg.taskType = bolt.getType();
             msg.msgType  = MSG_CREATE_TASK;
             msg.boltId   = bolt.getBoltId();
+            msg.taskId   = i;
 
 	        ret = write(connectionToServer, &msg, sizeof(CRANE_Message));
 

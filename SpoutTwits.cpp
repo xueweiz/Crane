@@ -54,7 +54,7 @@ void SpoutTwits::generateTuples()
 
 		Tuple imaginary(ss.str());
 		emit(imaginary);
-		//sleep(5);
+		usleep(10);
 	}
 
 

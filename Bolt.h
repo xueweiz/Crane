@@ -21,10 +21,13 @@ protected:
 	uint32_t port;
 
 	uint32_t boltId;
-	uint32_t taskId;
+	uint32_t taskId; // Universal Task ID given by the supervisor
 	uint32_t parallel_level;
+	uint32_t parallel_id; // Thread, or internal task
 
-	//std::vector<Bolt> subscriptors;
+	//This structure is for implementing fancier emitions (shuffle or hashing)
+	std::vector<struct BoltSubscriptor> subscriptors;
+
 	std::vector<std::string> subscriptorsAdd;
 	std::vector<uint32_t> subscriptorsPort;
 
@@ -48,21 +51,22 @@ public:
 
 	virtual void run();
 
-	virtual void generateTuples();
 
-	void emit(Tuple& tuple);
+	/* The default function will emit to all the subscribed bolts */
+	virtual void emit(Tuple& tuple);
 
 	std::vector<struct CRANE_TaskInfo> tasks;
 
 	void subscribe(Bolt& bolt, uint32_t port);
-	void subscribe2Spout(Bolt& bolt, uint32_t port);
 
-	void addSubscriptor(std::string ip, uint32_t port);
+	void addSubscriptor(std::string ip, uint32_t port, uint32_t boldId);
 
 	uint32_t getBoltId();
 	uint32_t getTaskId();
-
 	void setTaskId(uint32_t id);
+
+	uint32_t getParallelId();
+	void setParallelId(uint32_t id);
 
 	uint32_t getParallelLevel();
 

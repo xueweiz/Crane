@@ -32,11 +32,13 @@ void BoltFilterByGender::run()
 
 			if (tuple.getElement(1) == "male")
 			{
+				/*
 				if (rand() % 4 == 3 )
 				{
 					tuple.setElement(1, "female");
 				}
 				emit(tuple);
+				*/
 			}
 		}
 		else

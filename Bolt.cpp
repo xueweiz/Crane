@@ -66,26 +66,26 @@ void Bolt::subscribe(Bolt& bolt, uint32_t port)
 
 }
 
-void Bolt::subscribe2Spout(Bolt& bolt, uint32_t port)
-{
-	std::vector<struct CRANE_TaskInfo> tasksSubscriber = bolt.tasks;
-
-	for (int i = 0; i < bolt.tasks.size(); ++i)
-	{
-		subscriptorsAdd .push_back(bolt.tasks.at(i).ip_str);
-		subscriptorsPort.push_back(bolt.tasks.at(i).port);
-	}
-
-}
-
 void Bolt::emit(Tuple& tuple)
 {
-	if (subscriptorsAdd.size() == 0)
+	if (subscriptors.size() == 0)
 	{
 		std::cout << boltId << " - " << taskId <<" - Noone to emit to!" << std::endl;
 		return;
 	}
+/*
+	std::vector<std::string> subscriptorsAdd;
+	std::vector<uint32_t> subscriptorsPort;
 
+	for (int i = 0; i < subscriptors.size(); ++i)
+	{
+		for (int j = 0; j < subscriptors.at(i).tasks.size(); ++j)
+		{
+			subscriptorsAdd .push_back(subscriptors.at(i).tasks.at(j).ip_str);
+			subscriptorsPort.push_back(subscriptors.at(i).tasks.at(j).port);
+		}
+	}
+*/
 	std::cout << "emiting tuple: " << tuple.getSingleStringComa() << std::endl;
 
 	for (int i = 0; i < subscriptorsAdd.size(); ++i)
@@ -124,8 +124,35 @@ struct CRANE_TaskInfo Bolt::getTaskInfo(uint32_t index)
 	return tasks.at(index);
 }
 
-void Bolt::addSubscriptor(std::string ip, uint32_t port)
+void Bolt::addSubscriptor(std::string ip, uint32_t port, uint32_t boltId)
 {
+	bool flag = false;
+	for (int i = 0; i < subscriptors.size(); ++i)
+	{
+		if (subscriptors.at(i).boltId == boltId)
+		{
+			struct CRANE_TaskInfo task;
+			task.ip_str = ip;
+			task.port 	= port;
+
+			subscriptors.at(i).tasks.push_back(task);
+			flag = true;
+		}
+	}
+
+	if (!flag)
+	{
+		struct BoltSubscriptor newBolt;
+		newBolt.boltId = boltId;
+		struct CRANE_TaskInfo task;
+		task.ip_str = ip;
+		task.port 	= port;
+
+		newBolt.tasks.push_back(task);
+
+		subscriptors.push_back(newBolt);
+	}
+
 	subscriptorsAdd.push_back(ip);
 	subscriptorsPort.push_back(port);
 }
@@ -150,11 +177,6 @@ void Bolt::setPort(uint32_t port)
 uint32_t Bolt::getPort()
 {
 	return port;
-
-}
-
-void Bolt::generateTuples()
-{
 
 }
 
@@ -215,6 +237,16 @@ uint32_t Bolt::getTaskId()
 void Bolt::setTaskId(uint32_t id)
 {
 	taskId = id;
+}
+
+uint32_t Bolt::getParallelId()
+{
+	return parallel_id;
+}
+
+void Bolt::setParallelId(uint32_t id)
+{
+	parallel_id = id;
 }
 
 CRANE_TaskType Bolt::getType()
