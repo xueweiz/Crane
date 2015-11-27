@@ -77,7 +77,7 @@ void Supervisor::createListeningThread ()
 
             write(connFd, &msg, sizeof(CRANE_Message));
 
-            std::cout << "Task created: " <<  msg.taskId << " - " << msg.boltId  << " at port " << msg.port << std::endl;
+            //std::cout << "Task created: " <<  msg.taskId << " - " << msg.boltId  << " at port " << msg.port << std::endl;
         }
         else if (msgType == MSG_SUBSCRIPTION)
         {
@@ -98,7 +98,7 @@ void Supervisor::createListeningThread ()
                 exit(0);
             }
 
-            std::cout << "Subscription added!: " << msg.taskId << " - " << msg.boltId << " " << ip << " port: " << msg.port << std::endl;
+            //std::cout << "Subscription added!: " << msg.taskId << " - " << msg.boltId << " " << ip << " port: " << msg.port << std::endl;
         }
 
         

@@ -63,6 +63,7 @@ void Bolt::subscribe(Bolt& bolt, uint32_t cranePort)
 		    }   
 		}
 	}
+	std::cout << "Bolt " << bolt.boltId << " subscribed correctly" << std::endl;
 
 }
 
@@ -167,7 +168,7 @@ void Bolt::addSubscriptor(std::string ip, uint32_t port, uint32_t boltId)
 
 	while (ret != 0)
 	{
-		std::cout <<"Connecting to subscriptor at ... "<< ip << std::endl; 
+		//std::cout <<"Connecting to subscriptor at ... "<< ip << std::endl; 
 		sleep(1);
 		ret = connect_to_server(ip.c_str(), port4Connection, &connectionToServer);
 	}
@@ -234,35 +235,13 @@ void Bolt::listeningThread()
 {
 	int listenFd = open_socket(port); 
 
-    std::cout<<"listeningThread: created at port "<< port << std::endl;
+    //std::cout<<"listeningThread: created at port "<< port << std::endl;
 
 	while(!killListeningThread)
     {
     	size_t ret;
     	int connFd = listen_socket(listenFd);
-    	std::cout << "Conected"<< std::endl;
-        /*
-        while (true) // this is dangeorus
-        {
-        	CRANE_TupleMessage msg;
-        	memset(msg.buffer,0,512);
-			ret = read(connFd, &msg, sizeof(CRANE_TupleMessage));
-
-	        std::string newTuple (msg.buffer);
-	        Tuple tuple(newTuple);
-	        std::cout << "Received: " << tuple.getSingleStringComa() << std::endl;
-	        //std::cout << "Received: " << std::endl;
-
-	        tupleQueueLock.lock();
-	        tupleQueue.push_back(tuple);
-	        tupleQueueLock.unlock();
-
-	        if (msg.more == 0)
-	        {
-	        	break;
-	        }
-        }
-        */
+    	//std::cout << "Connected"<< std::endl;
 
         CRANE_Message msg;
 		ret = read(connFd, &msg, sizeof(CRANE_Message));
@@ -291,12 +270,12 @@ void Bolt::listeningThread()
 void Bolt::point2PointThread(uint32_t port4P2P)
 {
 	int listenFd = open_socket(port4P2P);
-	std::cout<<"Bolt::point2PointThread: created at port "<< port4P2P << std::endl;
+	//std::cout<<"Bolt::point2PointThread: created at port "<< port4P2P << std::endl;
 
 	size_t ret;
 	int connFd = listen_socket(listenFd);
 
-	std::cout<<"Bolt::point2PointThread: Connected "<< port4P2P << std::endl;
+	//std::cout<<"Bolt::point2PointThread: Connected "<< port4P2P << std::endl;
 
 	static uint32_t counter = 0;
     

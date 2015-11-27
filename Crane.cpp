@@ -80,6 +80,8 @@ void Crane::addBolt(Bolt& bolt)
 	    }   
 	}
 
+	std::cout << "Bolt " << bolt.getBoltId() << " added to Crane topology" << std::endl;
+
 }
 
 void Crane::run ()

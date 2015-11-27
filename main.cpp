@@ -190,6 +190,8 @@ int main (int argc, char* argv[])
 
         //Bolt subscribe itself to other bolts, different from spouts
         bolt2->subscribe(*bolt1, cranePort);
+
+        std::cout << "Crane Topology succesfully created... " << std::endl;
     }
     else
     {
