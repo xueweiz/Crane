@@ -21,7 +21,7 @@ Bolt::~Bolt()
 	listening.join(); // carefull here;
 }
 
-void Bolt::subscribe(Bolt& bolt, uint32_t port)
+void Bolt::subscribe(Bolt& bolt, uint32_t cranePort)
 {
 	//subscriptors.push_back(bolt);
 
@@ -38,7 +38,7 @@ void Bolt::subscribe(Bolt& bolt, uint32_t port)
 
 			int connectionToServer; //TCP connect
 
-			int ret = connect_to_server(address.c_str(), port, &connectionToServer);
+			int ret = connect_to_server(address.c_str(), cranePort, &connectionToServer);
 
 			while (ret != 0)
 			{
@@ -73,21 +73,36 @@ void Bolt::emit(Tuple& tuple)
 		std::cout << boltId << " - " << taskId <<" - Noone to emit to!" << std::endl;
 		return;
 	}
-/*
-	std::vector<std::string> subscriptorsAdd;
-	std::vector<uint32_t> subscriptorsPort;
+
+	std::vector<uint32_t> connFDs;
 
 	for (int i = 0; i < subscriptors.size(); ++i)
 	{
 		for (int j = 0; j < subscriptors.at(i).tasks.size(); ++j)
 		{
-			subscriptorsAdd .push_back(subscriptors.at(i).tasks.at(j).ip_str);
-			subscriptorsPort.push_back(subscriptors.at(i).tasks.at(j).port);
+			connFDs .push_back(subscriptors.at(i).tasks.at(j).connectionFD);
 		}
 	}
-*/
-	std::cout << "emiting tuple: " << tuple.getSingleStringComa() << std::endl;
 
+	CRANE_TupleMessage msg;
+
+	std::string str2Send = tuple.getSingleString();
+
+	memset(msg.buffer,0,512);
+    //msg.more = 0;
+    str2Send.copy(msg.buffer,str2Send.length(),0);
+
+    //std::string sent(msg.buffer);
+    //std::cout << "Sent: " << sent << std::endl;
+	
+	for (int i = 0; i < connFDs.size(); ++i)
+	{
+        write(connFDs.at(i), (char*)&msg, sizeof(CRANE_TupleMessage));
+	}
+
+	//std::cout << "emiting tuple: " << tuple.getSingleStringComa() << std::endl;
+
+/*
 	for (int i = 0; i < subscriptorsAdd.size(); ++i)
 	{
 		int connectionToServer; //TCP connect
@@ -115,6 +130,7 @@ void Bolt::emit(Tuple& tuple)
 	        close(connectionToServer);
 	    }   
 	}
+*/
 }
 
 struct CRANE_TaskInfo Bolt::getTaskInfo(uint32_t index)
@@ -126,6 +142,36 @@ struct CRANE_TaskInfo Bolt::getTaskInfo(uint32_t index)
 
 void Bolt::addSubscriptor(std::string ip, uint32_t port, uint32_t boltId)
 {
+
+	int connectionToServer; //TCP connect
+
+	int ret = connect_to_server(ip.c_str(), port, &connectionToServer);
+
+	while (ret != 0)
+	{
+		std::cout <<"Connecting to subscriptor to get port... "<< ip << std::endl; 
+		sleep(1);
+		ret = connect_to_server(ip.c_str(), port, &connectionToServer);
+	}
+
+    CRANE_Message msg;
+    msg.msgType = MSG_SUBSCRIPTION;
+    write(connectionToServer, &msg, sizeof(CRANE_Message));
+    read (connectionToServer, &msg, sizeof(CRANE_Message));
+    
+    uint32_t port4Connection = msg.port;
+    
+    close(connectionToServer);
+
+    ret = connect_to_server(ip.c_str(), port4Connection, &connectionToServer);
+
+	while (ret != 0)
+	{
+		std::cout <<"Connecting to subscriptor at ... "<< ip << std::endl; 
+		sleep(1);
+		ret = connect_to_server(ip.c_str(), port4Connection, &connectionToServer);
+	}
+
 	bool flag = false;
 	for (int i = 0; i < subscriptors.size(); ++i)
 	{
@@ -134,6 +180,7 @@ void Bolt::addSubscriptor(std::string ip, uint32_t port, uint32_t boltId)
 			struct CRANE_TaskInfo task;
 			task.ip_str = ip;
 			task.port 	= port;
+			task.connectionFD = connectionToServer;
 
 			subscriptors.at(i).tasks.push_back(task);
 			flag = true;
@@ -147,6 +194,8 @@ void Bolt::addSubscriptor(std::string ip, uint32_t port, uint32_t boltId)
 		struct CRANE_TaskInfo task;
 		task.ip_str = ip;
 		task.port 	= port;
+		task.connectionFD = connectionToServer;
+
 
 		newBolt.tasks.push_back(task);
 
@@ -160,6 +209,7 @@ void Bolt::addSubscriptor(std::string ip, uint32_t port, uint32_t boltId)
 void Bolt::setPort(uint32_t port)
 {
 	this->port = port;
+	portSeed = port + 111;
 
 	killListeningThread = true;
 	//std::cout << "Waiting for thread to finish.. " << std::endl;
@@ -184,14 +234,14 @@ void Bolt::listeningThread()
 {
 	int listenFd = open_socket(port); 
 
-    //std::cout<<"listeningThread: someone is contacting me... "<< std::endl;
+    std::cout<<"listeningThread: created at port "<< port << std::endl;
 
 	while(!killListeningThread)
     {
     	size_t ret;
     	int connFd = listen_socket(listenFd);
-    	//std::cout << "Conected"<< std::endl;
-        
+    	std::cout << "Conected"<< std::endl;
+        /*
         while (true) // this is dangeorus
         {
         	CRANE_TupleMessage msg;
@@ -212,11 +262,86 @@ void Bolt::listeningThread()
 	        	break;
 	        }
         }
+        */
+
+        CRANE_Message msg;
+		ret = read(connFd, &msg, sizeof(CRANE_Message));
+    	if (msg.msgType == MSG_SUBSCRIPTION)
+		{
+			std::thread* th = new std::thread(&Bolt::point2PointThread, this, portSeed++);
+			th->detach();
+
+			msg.port = portSeed-1;
+			write(connFd, &msg, sizeof(CRANE_Message));
+	        //std::cout << "Received: " << std::endl;
+		}
+		else
+		{
+			std::cout << "This is a huge error" << std::endl;
+		}
         
         close(connFd);
     }
 
+    std::cout<<"listeningThread: Finished. Used to listen at "<< port << std::endl;
+
    
+}
+
+void Bolt::point2PointThread(uint32_t port4P2P)
+{
+	int listenFd = open_socket(port4P2P);
+	std::cout<<"Bolt::point2PointThread: created at port "<< port4P2P << std::endl;
+
+	size_t ret;
+	int connFd = listen_socket(listenFd);
+
+	std::cout<<"Bolt::point2PointThread: Connected "<< port4P2P << std::endl;
+
+	static uint32_t counter = 0;
+    
+    while (!killListeningThread) // this is dangeorus
+    {
+    	CRANE_TupleMessage msg;
+    	memset(&msg,0, sizeof(CRANE_TupleMessage));
+		ret = read(connFd, (char*)&msg, sizeof(CRANE_TupleMessage));
+
+		if (ret < 0)
+		{
+			std::cout << "Bolt::point2PointThread - problem reading" << std::endl;
+			continue;
+		}
+
+		if (ret == 0)
+		{
+			continue;
+		}
+
+		if (ret != sizeof(CRANE_TupleMessage))
+		{
+			uint32_t aux = ret;
+			while (aux < sizeof(CRANE_TupleMessage))
+			{
+				ret = read(connFd, (char*) (&msg + aux), sizeof(CRANE_TupleMessage) - aux);
+				aux += ret;
+			}
+			//std::cout << "Bolt::point2PointThread - Framing error (" << sizeof(CRANE_TupleMessage) << "): received: " << ret << std::endl;
+			/* code */
+		}
+
+        std::string newTuple (msg.buffer);
+        Tuple tuple(newTuple);
+
+        if(counter++ % 10 == 0)
+        	std::cout << "Received: " << tuple.getSingleStringComa() << std::endl;
+        //std::cout << "Received: " << std::endl;
+
+        tupleQueueLock.lock();
+        tupleQueue.push_back(tuple);
+        tupleQueueLock.unlock();
+    }
+
+    close(connFd);
 }
 
 void Bolt::run()

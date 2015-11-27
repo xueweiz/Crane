@@ -30,6 +30,7 @@ public:
 	void addBolt (Bolt& bolt);
 
 	void run();
+	void stop();
 	
 };
 

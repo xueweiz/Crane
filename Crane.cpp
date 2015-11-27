@@ -88,9 +88,13 @@ void Crane::run ()
 	{
 		spouts.at(i)->run();
 	}
+}
 
-	while(true)
+void Crane::stop ()
+{
+	for (int i = 0; i < spouts.size(); ++i)
 	{
-
+		spouts.at(i)->stop();
 	}
+
 }

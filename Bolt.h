@@ -19,6 +19,7 @@ protected:
 	std::string name; 
 
 	uint32_t port;
+	uint32_t portSeed;
 
 	uint32_t boltId;
 	uint32_t taskId; // Universal Task ID given by the supervisor
@@ -41,6 +42,7 @@ protected:
 	bool killRunThread;
 
 	void listeningThread();
+	void point2PointThread(uint32_t port);
 
 	CRANE_TaskType type;
 
@@ -57,7 +59,7 @@ public:
 
 	std::vector<struct CRANE_TaskInfo> tasks;
 
-	void subscribe(Bolt& bolt, uint32_t port);
+	void subscribe(Bolt& bolt, uint32_t cranePort);
 
 	void addSubscriptor(std::string ip, uint32_t port, uint32_t boldId);
 

@@ -30,11 +30,11 @@ void BoltSplitGender::run()
 			tupleQueue.pop_front();
 			tupleQueueLock.unlock();
 
-			if (tuple.getElement(1) == "male")
+			if (tuple.getElement(1) == "male" && atoi(tuple.getElement(2).c_str()) % 2 == 0)
 			{
 				emit(tuple, 0);
 			}
-			else
+			else if ( (tuple.getElement(1) == "female" && atoi(tuple.getElement(2).c_str()) % 2 == 0) )
 			{
 				emit(tuple, 1);
 			}
@@ -55,14 +55,14 @@ void BoltSplitGender::emit(Tuple& tuple, uint32_t taskIdx)
 	}
 
 	std::vector<std::string> localSubscriptorsAdd;
-	std::vector<uint32_t> localSubscriptorsPort;
+	std::vector<uint32_t> connFDs;
 
 	for (int i = 0; i < subscriptors.size(); ++i)
 	{
 		if(subscriptors.at(i).tasks.size() > taskIdx)
 		{
-			localSubscriptorsAdd .push_back(subscriptors.at(i).tasks.at(taskIdx).ip_str);
-			localSubscriptorsPort.push_back(subscriptors.at(i).tasks.at(taskIdx).port);
+			connFDs .push_back(subscriptors.at(i).tasks.at(taskIdx).connectionFD);
+			//localSubscriptorsPort.push_back(subscriptors.at(i).tasks.at(taskIdx).port);
 		}
 		else
 		{
@@ -71,10 +71,22 @@ void BoltSplitGender::emit(Tuple& tuple, uint32_t taskIdx)
 		}
 	}
 
-	assert(localSubscriptorsAdd.size() > 0);
+	assert(connFDs.size() > 0);
 
-	std::cout << "emiting tuple: " << tuple.getSingleStringComa() << std::endl;
+	//std::cout << "emiting tuple: " << tuple.getSingleStringComa() << std::endl;
 
+	CRANE_TupleMessage msg;
+    memset(&msg,0, sizeof(CRANE_TupleMessage));
+
+    std::string str2Send = tuple.getSingleString();
+    str2Send.copy(msg.buffer,str2Send.length(),0);
+
+	for (int i = 0; i < connFDs.size(); ++i)
+	{
+        write(connFDs.at(i), (char*)&msg, sizeof(CRANE_TupleMessage));
+	}
+
+/*
 	for (int i = 0; i < localSubscriptorsAdd.size(); ++i)
 	{
 		int connectionToServer; //TCP connect
@@ -93,11 +105,10 @@ void BoltSplitGender::emit(Tuple& tuple, uint32_t taskIdx)
         msg.more = 0;
         std::string str2Send = tuple.getSingleString();
         str2Send.copy(msg.buffer,str2Send.length(),0);
-        std::string sent(msg.buffer);
-        //std::cout << "Sent: " << sent << std::endl;
 
         write(connectionToServer, &msg, sizeof(CRANE_Message));
 
         close(connectionToServer);
 	}
+*/
 }

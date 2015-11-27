@@ -24,9 +24,10 @@ std::ofstream logFile;
 /* User thread: Waits for user to input a grep command 
 When receiving the grep command from command line (test cases uses this), 
 it will bypass the cin*/
-void listeningCin(Membership* m, FileSystem* fs)
+void listeningCin(Membership* m, FileSystem* fs, Crane* crane)
 {
     std::string input;
+
     while (true)
     {
         std::cout << "Type a command (help for a list): ";
@@ -119,8 +120,23 @@ void listeningCin(Membership* m, FileSystem* fs)
         }
         else if (input.compare("crane") == 0)
         {
-
+            std::string action;
+            std::cin >> action;
+            if (crane != NULL)
+            {
+                if (action.compare("start") == 0)
+                {
+                    std::cout << "Starting crane... " << std::endl;
+                    crane->run();
+                }
+                else if (action.compare("stop") == 0)
+                {
+                    std::cout << "Stoping crane... " << std::endl;
+                    crane->stop();
+                }
+            }
         }
+
         else{
             std::cout << "PLEASE CHECK AGAIN THE POSSIBLE OPTIONS" << std::endl;
         }
@@ -151,47 +167,38 @@ int main (int argc, char* argv[])
 
     Membership m(isIntroducer, port);
     FileSystem fs (filesystemPort, m);
-
-    std::thread cinListening(listeningCin, &m, &fs);
-    //cinListening.join();
-
-    // Create Crane 
-
+    
+    // Create Crane
+    Crane* crane = NULL;
     if (isIntroducer)
     {
-        Crane crane(m, cranePort);
+        crane = new Crane(m, cranePort);
 
-        SpoutTwits spout("spout",1); // Create the spout which generates sentences
+        // APP 1 - Filter by gender splitting.
+
+        SpoutTwits* spout =  new SpoutTwits("spout",1); // Create the spout which generates sentences
         srand (time(NULL));
-        BoltSplitGender bolt1("bolt1", 1);
-        BoltFilterByGender bolt2("bolt2", 2);
-        //BoltFilterByGender bolt3("bolt3", 1);
+        BoltSplitGender* bolt1 =  new BoltSplitGender("bolt1", 2);
+        BoltFilterByGender* bolt2 =  new BoltFilterByGender("bolt2", 2);
 
-        std::cout << "Bolt1 created" << std::endl;
-        //BoltFilterByGender bolt2("bolt2", 4);
-        //BoltSink sink("sink", 4);
-
-        crane.addSpout(spout);
-        crane.addBolt(bolt1); // This will load information about ips.
-        crane.addBolt(bolt2);
-        //crane.addBolt(bolt3);
+        crane->addSpout(*spout);
+        crane->addBolt(*bolt1); // This will load information about ips.
+        crane->addBolt(*bolt2);
 
         // Spout subscribe bolts
-        spout.subscribe(bolt1, cranePort);
+        spout->subscribe(*bolt1);
 
         //Bolt subscribe itself to other bolts, different from spouts
-        bolt2.subscribe(bolt1, cranePort);
-        //bolt3.subscribe(bolt2, cranePort);
-
-        sleep(5);
-        crane.run();
+        bolt2->subscribe(*bolt1, cranePort);
     }
     else
     {
-        Supervisor supervisor(cranePort);
-
-        supervisor.run();
+        Supervisor* supervisor =  new Supervisor(cranePort);
+        supervisor -> run();
     }
+
+    std::thread cinListening(listeningCin, &m, &fs, crane);
+
 
     cinListening.join();
 

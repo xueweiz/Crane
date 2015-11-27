@@ -9,15 +9,16 @@
 class SpoutTwits : public Spout
 {
 
-private: 
+protected: 
 
-	std::thread generate;
+	virtual void communicationThread();
 
 public: 
 	SpoutTwits(std::string name, unsigned int parallel_level);
 	virtual ~SpoutTwits();
 
 	virtual void run();
+	virtual void stop();
 
 	virtual void generateTuples();
 

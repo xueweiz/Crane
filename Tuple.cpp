@@ -73,6 +73,11 @@ std::string Tuple::getSingleStringComa()
 		ss << elements.at(i) << ",";
 	}
 	std::string ret = ss.str();
+	if (ret.empty())
+	{
+		std::cout << "error!!!: tuple is empty"<< std::endl;
+		return "";
+	}
 	ret.pop_back();
 	//ret.push_back('\n');
 

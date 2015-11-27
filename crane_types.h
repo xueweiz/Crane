@@ -32,10 +32,11 @@ struct CRANE_Message
 
 struct CRANE_TupleMessage 
 {
-	char buffer [512];
+	char buffer [256];
 	// How many more messages are missing. 
 	//0 means it is only one
 	char more; 
+	char ack;
 };
 
 struct CRANE_TaskInfo
@@ -43,6 +44,7 @@ struct CRANE_TaskInfo
 	uint32_t taskId;
 	std::string ip_str;
 	uint32_t port;
+	uint32_t connectionFD;
 };
 
 struct BoltSubscriptor

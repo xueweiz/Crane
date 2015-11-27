@@ -21,24 +21,23 @@ protected:
 	uint32_t spoutId;
 	uint32_t parallel_level;
 
-	//std::vector<Spout> subscriptors;
+	std::vector<struct BoltSubscriptor> subscriptors;
+
 	std::vector<std::string> subscriptorsAdd;
 	std::vector<uint32_t> subscriptorsPort;
 
 	std::mutex tupleQueueLock;
 	std::list<Tuple> tupleQueue;
 
-	std::thread listening;
-	bool killListeningThread;
-
-	std::thread runThread;
-	bool killRunThread;
+	std::thread generate;
+	bool killGenerateThread;
 
 	std::thread communication;
 	bool killCommunicationThread;
 
-	void listeningThread();
-	void communicationThread();
+	virtual void communicationThread();
+	virtual void generateTuples();
+
 	void emit(Tuple& tuple);
 
 public: 
@@ -47,15 +46,12 @@ public:
 	virtual ~Spout();
 
 	virtual void run();
+	virtual void stop();
 
-	virtual void generateTuples();
-
-	void subscribe(Bolt& bolt, uint32_t port);
+	void subscribe(Bolt& bolt);
 
 	uint32_t getSpoutId();
-
 	uint32_t getParallelLevel();
-
 	std::string getName();
 
 };

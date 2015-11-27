@@ -28,11 +28,6 @@ Supervisor::~Supervisor()
 void Supervisor::run()
 {
 
-    while(true)
-    {
-
-    }
-
 }
 
 void Supervisor::createListeningThread ()
