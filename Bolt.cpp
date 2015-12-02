@@ -293,6 +293,7 @@ void Bolt::point2PointThread(uint32_t port4P2P)
 
 		if (ret == 0)
 		{
+			std::cout << "Bolt::point2PointThread - problem 0" << std::endl;
 			continue;
 		}
 
@@ -312,7 +313,7 @@ void Bolt::point2PointThread(uint32_t port4P2P)
         Tuple tuple(newTuple);
 
         if(counter++ % 10 == 0)
-        	std::cout << "Received: " << tuple.getSingleStringComa() << std::endl;
+        	//std::cout << "Received: " << tuple.getSingleStringComa() << std::endl;
         //std::cout << "Received: " << std::endl;
 
         tupleQueueLock.lock();

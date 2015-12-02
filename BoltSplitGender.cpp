@@ -30,7 +30,7 @@ void BoltSplitGender::run()
 			tupleQueue.pop_front();
 			tupleQueueLock.unlock();
 
-			if (tuple.getElement(1) == "male" && atoi(tuple.getElement(2).c_str()) % 2 == 0)
+			if (tuple.getElement(1) == "male" ) //&& atoi(tuple.getElement(2).c_str()) % 2 == 0)
 			{
 				emit(tuple, 0);
 			}

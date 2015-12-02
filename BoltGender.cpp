@@ -21,6 +21,7 @@ BoltFilterByGender::~BoltFilterByGender()
 
 void BoltFilterByGender::run()
 {
+	int counterMales = 0;
 	while(!killRunThread)
 	{
 		tupleQueueLock.lock();
@@ -32,6 +33,7 @@ void BoltFilterByGender::run()
 
 			if (tuple.getElement(1) == "male")
 			{
+				std::cout<< "Males: " << ++counterMales << std::endl;
 				/*
 				if (rand() % 4 == 3 )
 				{

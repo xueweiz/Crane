@@ -44,6 +44,7 @@ void SpoutTwits::stop()
 void SpoutTwits::generateTuples()
 {
 	uint32_t counter = 0;
+	int counterMale = 0;
 	while(!killGenerateThread)
 	{
 		std::stringstream ss;
@@ -60,6 +61,7 @@ void SpoutTwits::generateTuples()
 		if (rand() % 3 == 1)
 		{
 			ss << "male\n";
+			counterMale++;
 		}
 		else if (rand() % 3 == 0)
 		{
@@ -74,6 +76,11 @@ void SpoutTwits::generateTuples()
 
 		Tuple imaginary(ss.str());
 		emit(imaginary);
+		if (counterMale == 4000)
+		{
+			std::cout << "Done emiting males" << std::endl;
+			return;
+		}
 		//usleep(1);
 		if (counter % 20 == 0)
 		{

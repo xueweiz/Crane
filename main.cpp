@@ -178,7 +178,7 @@ int main (int argc, char* argv[])
 
         SpoutTwits* spout =  new SpoutTwits("spout",1); // Create the spout which generates sentences
         srand (time(NULL));
-        BoltSplitGender* bolt1 =  new BoltSplitGender("bolt1", 2);
+        BoltSplitGender* bolt1 =  new BoltSplitGender("bolt1", 3);
         BoltFilterByGender* bolt2 =  new BoltFilterByGender("bolt2", 2);
 
         crane->addSpout(*spout);
