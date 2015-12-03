@@ -8,6 +8,9 @@
 #include "Supervisor.h"
 #include "BoltGender.h"
 #include "BoltSplitGender.h"
+#include "BoltFilterMale.h"
+#include "BoltFilterFemale.h"
+#include "BoltAddElement.h"
 
 #define logFile std::cout
 
@@ -59,6 +62,18 @@ void Supervisor::createListeningThread ()
             else if (taskType == CRANE_TASK_SPLIT_GENDER)
             {
                 task = new BoltSplitGender("task_split_gender",1);
+            }
+            else if (taskType == CRANE_TASK_FILTER_MALE)
+            {
+                task = new BoltFilterMale("task_filter_male",1);
+            }
+            else if (taskType == CRANE_TASK_FILTER_FEMALE)
+            {
+                task = new BoltFilterFemale("task_filter_female",1);
+            }
+            else if (taskType == CRANE_TASK_ADD_ELEMENT)
+            {
+                task = new BoltAddElement("task_add_element",1);
             }
             else
             {

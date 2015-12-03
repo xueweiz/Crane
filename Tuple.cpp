@@ -53,6 +53,11 @@ void Tuple::setElement(int element, std::string str)
 	elements.at(element) = str;
 }
 
+void Tuple::addElement(std::string str)
+{
+	elements.push_back(str);
+}
+
 std::string Tuple::getSingleString()
 {
 	std::stringstream ss;

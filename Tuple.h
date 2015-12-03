@@ -20,6 +20,7 @@ public:
 
 	std::string getElement(int element);
 	void setElement(int element, std::string str);
+	void addElement(std::string str);
 
 	std::string getSingleString();
 	std::string getSingleStringComa();

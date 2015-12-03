@@ -12,10 +12,14 @@
 #include "FileSystem.h"
 
 #include "Crane.h"
+#include "SpoutTwits.h"
+
 #include "Supervisor.h"
 #include "BoltGender.h"
 #include "BoltSplitGender.h"
-#include "SpoutTwits.h"
+#include "BoltFilterMale.h"
+#include "BoltFilterFemale.h"
+#include "BoltAddElement.h"
 
 using namespace std;
 
@@ -175,7 +179,7 @@ int main (int argc, char* argv[])
         crane = new Crane(m, cranePort);
 
         // APP 1 - Filter by gender splitting.
-
+/*
         SpoutTwits* spout =  new SpoutTwits("spout",1); // Create the spout which generates sentences
         srand (time(NULL));
         BoltSplitGender* bolt1 =  new BoltSplitGender("bolt1", 3);
@@ -190,6 +194,27 @@ int main (int argc, char* argv[])
 
         //Bolt subscribe itself to other bolts, different from spouts
         bolt2->subscribe(*bolt1, cranePort);
+*/
+
+        // APP 2 - Filter by gender agains STORM.
+
+        SpoutTwits* spout =  new SpoutTwits("spout",1); // Create the spout which generates sentences
+        srand (time(NULL));
+        BoltAddElement* bolt1 =  new BoltAddElement("bolt1", 2);
+        //BoltFilterMale* bolt2 =  new BoltFilterMale("bolt2", 1);
+        BoltFilterFemale* bolt3 =  new BoltFilterFemale("bolt3", 1);
+
+        crane->addSpout(*spout);
+        crane->addBolt(*bolt1); // This will load information about ips.
+        //crane->addBolt(*bolt2);
+        crane->addBolt(*bolt3);
+
+        // Spout subscribe bolts
+        spout->subscribe(*bolt1);
+
+        //Bolt subscribe itself to other bolts, different from spouts
+        //bolt2->subscribe(*bolt1, cranePort);
+        bolt3->subscribe(*bolt1, cranePort);
 
         std::cout << "Crane Topology succesfully created... " << std::endl;
     }
