@@ -11,7 +11,7 @@ Bolt::Bolt(std::string name, uint32_t parallel_level) :
 	name(name), parallel_level(parallel_level)
 {
 	type = CRANE_TASK_EMPTY;
-	boltId = rand() % 100;
+	boltId = 9999999; // This should be assign by crane, if found this number is an error. 
 }
 
 Bolt::~Bolt()
@@ -63,7 +63,7 @@ void Bolt::subscribe(Bolt& bolt, uint32_t cranePort)
 		    }   
 		}
 	}
-	std::cout << "Bolt " << bolt.boltId << " subscribed correctly" << std::endl;
+	std::cout << "Bolt " << getBoltId() << " subscribed correctly to "<<  bolt.boltId  << std::endl;
 
 }
 
@@ -85,12 +85,15 @@ void Bolt::emit(Tuple& tuple)
 		}
 	}
 
+	assert(connFDs.size() > 0);
+
+	//std::cout << "emiting tuple: " << tuple.getSingleStringComa() << std::endl;
+
 	CRANE_TupleMessage msg;
 
 	std::string str2Send = tuple.getSingleString();
 
-	memset(msg.buffer,0,512);
-    //msg.more = 0;
+	memset(&msg,0, sizeof(CRANE_TupleMessage));
     str2Send.copy(msg.buffer,str2Send.length(),0);
 
     //std::string sent(msg.buffer);
@@ -102,36 +105,6 @@ void Bolt::emit(Tuple& tuple)
 	}
 
 	//std::cout << "emiting tuple: " << tuple.getSingleStringComa() << std::endl;
-
-/*
-	for (int i = 0; i < subscriptorsAdd.size(); ++i)
-	{
-		int connectionToServer; //TCP connect
-
-		int ret = connect_to_server(subscriptorsAdd.at(i).c_str(), subscriptorsPort.at(i), &connectionToServer);
-
-		while (ret != 0)
-		{
-			std::cout <<"Bolt::emit Cannot connect to... "<<(subscriptorsAdd.at(i))<< std::endl; 
-			sleep(1);
-		}
-	    
-	    {
-            CRANE_TupleMessage msg;
-            memset(msg.buffer,0,512);
-
-            msg.more = 0;
-            std::string str2Send = tuple.getSingleString();
-            str2Send.copy(msg.buffer,str2Send.length(),0);
-            std::string sent(msg.buffer);
-            //std::cout << "Sent: " << sent << std::endl;
-
-	        write(connectionToServer, &msg, sizeof(CRANE_Message));
-
-	        close(connectionToServer);
-	    }   
-	}
-*/
 }
 
 struct CRANE_TaskInfo Bolt::getTaskInfo(uint32_t index)
@@ -205,6 +178,8 @@ void Bolt::addSubscriptor(std::string ip, uint32_t port, uint32_t boltId)
 
 	subscriptorsAdd.push_back(ip);
 	subscriptorsPort.push_back(port);
+
+	//std::cout << "New subscriptor " << ip << " - " << port << std::endl;
 }
 
 void Bolt::setPort(uint32_t port)
@@ -231,6 +206,7 @@ uint32_t Bolt::getPort()
 
 }
 
+// Admin listening thread
 void Bolt::listeningThread()
 {
 	int listenFd = open_socket(port); 
@@ -267,6 +243,7 @@ void Bolt::listeningThread()
    
 }
 
+// Reading thread
 void Bolt::point2PointThread(uint32_t port4P2P)
 {
 	int listenFd = open_socket(port4P2P);
@@ -337,6 +314,11 @@ uint32_t Bolt::getBoltId()
 uint32_t Bolt::getTaskId()
 {
 	return taskId;
+}
+
+void Bolt::setBoltId(uint32_t id)
+{
+	boltId = id;
 }
 
 void Bolt::setTaskId(uint32_t id)

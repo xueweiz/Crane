@@ -11,7 +11,7 @@
 BoltAddElement::BoltAddElement(std::string name, unsigned int parallel_level)
 	: Bolt(name, parallel_level)
 {
-	type = CRANE_TASK_FILTER_MALE;
+	type = CRANE_TASK_ADD_ELEMENT;
 }
 
 BoltAddElement::~BoltAddElement()
@@ -34,10 +34,12 @@ void BoltAddElement::run()
 			if (tuple.getElement(1) == "male" ) 
 			{
 				tuple.addElement("cero");
+				emit(tuple);
 			}
 			else if (tuple.getElement(1) == "female" ) 
 			{
 				tuple.addElement("one");
+				emit(tuple);
 			}
 		}
 		else

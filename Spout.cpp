@@ -195,7 +195,13 @@ void Spout::communicationThread()
 	            str2Send.copy(msg.buffer,str2Send.length(),0);
 	            assert(str2Send.length() > 0);
 
-		        write(connFDs.at(i), (char*)&msg, sizeof(CRANE_TupleMessage));
+		        int ret = write(connFDs.at(i), (char*)&msg, sizeof(CRANE_TupleMessage));
+
+		        if (ret <= 0)
+		        {
+		        	std::cout << "Error writing!!!" << std::endl;
+		        	return;
+		        }
 
 	    	}
 	    	/*

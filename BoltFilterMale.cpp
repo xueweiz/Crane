@@ -33,8 +33,11 @@ void BoltFilterMale::run()
 
 			if (tuple.getElement(1) == "male" ) 
 			{
-				//emit(tuple, 0);
-				std::cout << "Males: " << ++counter << std::endl;
+				++counter;
+				if (counter % 100 == 0)
+				{
+					std::cout << "Males: " << counter << std::endl;
+				}
 			}
 		}
 		else

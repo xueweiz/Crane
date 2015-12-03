@@ -171,6 +171,9 @@ int main (int argc, char* argv[])
 
     Membership m(isIntroducer, port);
     FileSystem fs (filesystemPort, m);
+
+    Supervisor* supervisor =  new Supervisor(cranePort);
+    supervisor -> run();
     
     // Create Crane
     Crane* crane = NULL;
@@ -181,7 +184,6 @@ int main (int argc, char* argv[])
         // APP 1 - Filter by gender splitting.
 /*
         SpoutTwits* spout =  new SpoutTwits("spout",1); // Create the spout which generates sentences
-        srand (time(NULL));
         BoltSplitGender* bolt1 =  new BoltSplitGender("bolt1", 3);
         BoltFilterByGender* bolt2 =  new BoltFilterByGender("bolt2", 2);
 
@@ -196,32 +198,32 @@ int main (int argc, char* argv[])
         bolt2->subscribe(*bolt1, cranePort);
 */
 
-        // APP 2 - Filter by gender agains STORM.
+        // APP 2 - Filter by gender against STORM.
 
         SpoutTwits* spout =  new SpoutTwits("spout",1); // Create the spout which generates sentences
-        srand (time(NULL));
-        BoltAddElement* bolt1 =  new BoltAddElement("bolt1", 2);
-        //BoltFilterMale* bolt2 =  new BoltFilterMale("bolt2", 1);
+        BoltAddElement* bolt1   =  new BoltAddElement("bolt1", 3);
+        BoltFilterMale* bolt2   =  new BoltFilterMale("bolt2", 1);
         BoltFilterFemale* bolt3 =  new BoltFilterFemale("bolt3", 1);
 
         crane->addSpout(*spout);
         crane->addBolt(*bolt1); // This will load information about ips.
-        //crane->addBolt(*bolt2);
+        crane->addBolt(*bolt2);
         crane->addBolt(*bolt3);
 
         // Spout subscribe bolts
         spout->subscribe(*bolt1);
 
         //Bolt subscribe itself to other bolts, different from spouts
-        //bolt2->subscribe(*bolt1, cranePort);
+        bolt2->subscribe(*bolt1, cranePort);
         bolt3->subscribe(*bolt1, cranePort);
 
+        sleep(3);
         std::cout << "Crane Topology succesfully created... " << std::endl;
     }
     else
     {
-        Supervisor* supervisor =  new Supervisor(cranePort);
-        supervisor -> run();
+        //Supervisor* supervisor =  new Supervisor(cranePort);
+        //supervisor -> run();
     }
 
     std::thread cinListening(listeningCin, &m, &fs, crane);

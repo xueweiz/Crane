@@ -22,6 +22,7 @@ BoltFilterFemale::~BoltFilterFemale()
 void BoltFilterFemale::run()
 {
 	int counter = 0;
+	std::cout << "running female stasl" << std::endl;
 	while(!killRunThread)
 	{
 		tupleQueueLock.lock();
@@ -33,8 +34,11 @@ void BoltFilterFemale::run()
 
 			if (tuple.getElement(1) == "female" ) 
 			{
-				//emit(tuple, 0);
-				std::cout << "Females: " << ++counter << std::endl;
+				++counter;
+				if (counter % 100 == 0)
+				{
+					std::cout << "Females: " << counter << std::endl;
+				}
 			}
 		}
 		else

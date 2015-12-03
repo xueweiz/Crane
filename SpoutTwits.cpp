@@ -45,11 +45,14 @@ void SpoutTwits::generateTuples()
 {
 	uint32_t counter = 0;
 	int counterMale = 0;
+	int counterFemale = 0;
+	int totalTuples = 40000;
 	while(!killGenerateThread)
 	{
 		std::stringstream ss;
+		int randNum = rand();
 
-		if (rand() % 2 == 1)
+		if (randNum % 2 == 1)
 		{
 			ss << "Hello\n";
 		}
@@ -58,14 +61,23 @@ void SpoutTwits::generateTuples()
 			ss << "GoodBye\n";
 		}
 		
-		if (rand() % 3 == 1)
+		if (randNum % 3 == 1)
 		{
+			if (counterMale == totalTuples)
+			{
+				continue;
+			}
 			ss << "male\n";
 			counterMale++;
 		}
-		else if (rand() % 3 == 0)
+		else if (randNum % 3 == 0)
 		{
+			if (counterFemale == totalTuples)
+			{
+				continue;
+			}
 			ss << "female\n";
+			counterFemale++;
 		}
 		else
 		{
@@ -76,7 +88,7 @@ void SpoutTwits::generateTuples()
 
 		Tuple imaginary(ss.str());
 		emit(imaginary);
-		if (counterMale == 4000)
+		if (counterMale == totalTuples && counterFemale == totalTuples)
 		{
 			std::cout << "Done emiting males" << std::endl;
 			return;
@@ -139,7 +151,7 @@ void SpoutTwits::communicationThread()
 				CRANE_TupleMessage msg;
 	            memset(&msg,0, sizeof(CRANE_TupleMessage));
 	            //msg.more = tuples2Send.size() - j - 1;
-	            std::cout << "emiting tuple: " << tuples2Send.at(j).getSingleStringComa() << std::endl;
+	            //std::cout << "emiting tuple: " << tuples2Send.at(j).getSingleStringComa() << std::endl;
 	            
 	            std::string str2Send = tuples2Send.at(j).getSingleString();
 	            str2Send.copy(msg.buffer,str2Send.length(),0);
@@ -159,6 +171,6 @@ void SpoutTwits::communicationThread()
 	    	*/
 		}
 
-		std::cout << "Done emiting group" << std::endl;
+		//std::cout << "Done emiting group" << std::endl;
 	}
 }

@@ -25,6 +25,9 @@ void Crane::addSpout(Spout& spout)
 
 void Crane::addBolt(Bolt& bolt)
 {
+	static int boltCounter = 0;
+	bolt.setBoltId(boltCounter++);
+
 	std::vector<Node> nodes = membership.getMembershipList();
 
 	static uint32_t nodeIdx = 0;
@@ -38,6 +41,7 @@ void Crane::addBolt(Bolt& bolt)
 	for (int i = 0; i < bolt.getParallelLevel(); ++i)
 	{
 		uint32_t nodeId = (nodeIdx++) % (nodes.size()-1) + 1;
+		// uint32_t nodeId = (nodeIdx++) % (nodes.size());
 
 		std::string address = nodes.at(nodeId).ip_str;
 

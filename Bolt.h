@@ -66,6 +66,7 @@ public:
 	uint32_t getBoltId();
 	uint32_t getTaskId();
 	void setTaskId(uint32_t id);
+	void setBoltId(uint32_t id);
 
 	uint32_t getParallelId();
 	void setParallelId(uint32_t id);
