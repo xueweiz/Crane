@@ -31,7 +31,6 @@ public:
 
 	void run();
 	void stop();
-	
 };
 
 #endif

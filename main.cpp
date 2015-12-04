@@ -201,7 +201,7 @@ int main (int argc, char* argv[])
         // APP 2 - Filter by gender against STORM.
 
         SpoutTwits* spout =  new SpoutTwits("spout",1); // Create the spout which generates sentences
-        BoltAddElement* bolt1   =  new BoltAddElement("bolt1", 3);
+        BoltAddElement* bolt1   =  new BoltAddElement("bolt1", 4);
         BoltFilterMale* bolt2   =  new BoltFilterMale("bolt2", 1);
         BoltFilterFemale* bolt3 =  new BoltFilterFemale("bolt3", 1);
 
