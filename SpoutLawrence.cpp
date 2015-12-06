@@ -4,33 +4,33 @@
 #include <sstream>
 #include <assert.h>
 
-#include "SpoutTwits.h"
+#include "SpoutLawrence.h"
 #include "connections.h"
 
-SpoutTwits::SpoutTwits(std::string name, unsigned int parallel_level)
+SpoutLawrence::SpoutLawrence(std::string name, unsigned int parallel_level)
 	: Spout(name, parallel_level)
 {
 	//type = CRANE_TASK_GENDER;
 }
 
-SpoutTwits::~SpoutTwits()
+SpoutLawrence::~SpoutLawrence()
 {
 
 }
 
-void SpoutTwits::run()
+void SpoutLawrence::run()
 {
-	std::cout << "Running SpoutTwits" << std::endl;
+	std::cout << "Running SpoutLawrence" << std::endl;
 	killGenerateThread = false;
-	std::thread th(&SpoutTwits::generateTuples, this);
+	std::thread th(&SpoutLawrence::generateTuples, this);
     generate.swap(th);
 
     killCommunicationThread = false;
-	std::thread th2(&SpoutTwits::communicationThread, this);
+	std::thread th2(&SpoutLawrence::communicationThread, this);
     communication.swap(th2);
 }
 
-void SpoutTwits::stop()
+void SpoutLawrence::stop()
 {
 	killGenerateThread = true;
     generate.join();
@@ -41,70 +41,87 @@ void SpoutTwits::stop()
     std::cout << "Thread stoped" << std::endl;
 }
 
-void SpoutTwits::generateTuples()
+void SpoutLawrence::initFile()
+{
+	std::cout << "Init file... " << std::endl;
+
+	file.open("lbl-conn-7.red");
+	if(!file.good())
+	{
+		std::cout << "Problem loading file calgary_access_log" << std::endl;
+		exit(0);
+	}
+}
+
+std::string SpoutLawrence::getNextAccess()
+{
+	std::string access;
+
+	std::stringstream final;
+	std::string proto = "?";
+	std::string send  = "?";
+	std::string recv  = "?";
+	std::string aux;
+	
+	while ( send == "?" || recv == "?")
+	{
+		std::getline(file,access);
+
+		if (file.eof())
+		{
+			file.close();
+			initFile();
+			std::cout << "File start over.. " << std::endl;
+			return "end";
+		}
+
+		std::stringstream ss(access);
+
+		ss >> aux;
+		ss >> aux;
+		ss >> proto;
+		ss >> send;
+		ss >> recv;
+	}
+
+	final << proto << std::endl;
+	final << send << std::endl;
+	final << recv << std::endl;
+	
+	return final.str();
+}
+
+void SpoutLawrence::generateTuples()
 {
 	uint32_t counter = 0;
-	int counterMale = 0;
-	int counterFemale = 0;
-	int totalTuples = 40000;
+
+	initFile();
+
 	while(!killGenerateThread)
 	{
 		std::stringstream ss;
-		int randNum = rand();
 
-		if (randNum % 2 == 1)
-		{
-			ss << "Hello\n";
-		}
-		else
-		{
-			ss << "GoodBye\n";
-		}
-		
-		if (randNum % 3 == 1)
-		{
-			if (counterMale == totalTuples)
-			{
-				continue;
-			}
-			ss << "male\n";
-			counterMale++;
-		}
-		else if (randNum % 3 == 0)
-		{
-			if (counterFemale == totalTuples)
-			{
-				continue;
-			}
-			ss << "female\n";
-			counterFemale++;
-		}
-		else
-		{
-			ss << "unknown\n";
-		}	
+		std::string str = getNextAccess();
 
-		ss << counter++ << "\0";
+		if(str.compare("end") == 0)
+		{
+			return; 
+		}
 
-		Tuple imaginary(ss.str());
+		Tuple imaginary(str);
 		emit(imaginary);
-		if (counterMale == totalTuples && counterFemale == totalTuples)
-		{
-			std::cout << "Done emiting males" << std::endl;
-			return;
-		}
-		//usleep(1);
+
+		std::cout << imaginary.getSingleStringComa() << std::endl;
+
 		if (counter % 20 == 0)
 		{
 			usleep(10000);
 		}
-		//sleep(1);
 	}
 }
 
-void SpoutTwits::communicationThread()
+void SpoutLawrence::communicationThread()
 {
-	size_t tupleCounter =0;
 	while(!killCommunicationThread)
 	{
 		if (subscriptors.size() == 0)
@@ -133,19 +150,16 @@ void SpoutTwits::communicationThread()
 			continue;
 		}
 
-		tupleCounter += tuples2Send.size();
-
-		if (tupleCounter % 10000 == 0)
-		{
-			std::cout << "Emitted: " << tupleCounter << std::endl;
-		}
-
 		std::vector<uint32_t> connFDs;
 
 		for (int i = 0; i < subscriptors.size(); ++i)
 		{
 			uint32_t taskId = rand() % subscriptors.at(i).tasks.size(); 
-			connFDs .push_back(subscriptors.at(i).tasks.at(taskId).connectionFD);
+			
+			//for (int j = 0; j < subscriptors.at(i).tasks.size(); ++j)
+			{
+				connFDs .push_back(subscriptors.at(i).tasks.at(taskId).connectionFD);
+			}
 		}
 
 		for (int i = 0; i < connFDs.size(); ++i)
@@ -155,7 +169,7 @@ void SpoutTwits::communicationThread()
 				CRANE_TupleMessage msg;
 	            memset(&msg,0, sizeof(CRANE_TupleMessage));
 	            //msg.more = tuples2Send.size() - j - 1;
-	            std::cout << "emiting tuple: " << tuples2Send.at(j).getSingleStringComa() << std::endl;
+	            //std::cout << "emiting tuple: " << tuples2Send.at(j).getSingleStringComa() << std::endl;
 	            
 	            std::string str2Send = tuples2Send.at(j).getSingleString();
 	            str2Send.copy(msg.buffer,str2Send.length(),0);
@@ -175,6 +189,6 @@ void SpoutTwits::communicationThread()
 	    	*/
 		}
 
-		std::cout << "Done emiting group" << std::endl;
+		//std::cout << "Done emiting group" << std::endl;
 	}
 }

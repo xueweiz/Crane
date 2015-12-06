@@ -25,6 +25,8 @@ public:
 	std::string getSingleString();
 	std::string getSingleStringComa();
 
+	size_t getNumElements();
+
 };
 
 #endif

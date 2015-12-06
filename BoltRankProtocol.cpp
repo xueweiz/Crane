@@ -6,26 +6,26 @@
 #include <unordered_map>
 
 #include "connections.h"
-#include "BoltRankHtml.h"
+#include "BoltRankProtocol.h"
 
 
-BoltRankHtml::BoltRankHtml(std::string name, unsigned int parallel_level)
+BoltRankProtocol::BoltRankProtocol(std::string name, unsigned int parallel_level)
 	: Bolt(name, parallel_level)
 {
-	type = CRANE_TASK_RANK_HTML;
+	type = CRANE_TASK_RANK_PROTOCOL;
 }
 
-BoltRankHtml::~BoltRankHtml()
+BoltRankProtocol::~BoltRankProtocol()
 {
 
 }
 
-void BoltRankHtml::run()
+void BoltRankProtocol::run()
 {
 	int counter = 0;
 
-	std::size_t visits = 0;
-	std::string page = "";
+	std::size_t connections = 0;
+	std::string protocol = "";
 
 	while(!killRunThread)
 	{
@@ -41,12 +41,11 @@ void BoltRankHtml::run()
 				continue;
 			}
 
-			if ( atoi(tuple.getElement(1).c_str()) > visits && tuple.getElement(0) != "index.html" )
+			if ( atoi(tuple.getElement(1).c_str()) > connections)
 			{
-				visits = atoi(tuple.getElement(1).c_str());
-				page = tuple.getElement(0);
+				connections = atoi(tuple.getElement(1).c_str());
+				protocol = tuple.getElement(0);
 
-				//emit(tuple); // Most ranked page
 				std::cout << "Most visited: " << tuple.getSingleStringComa() << std::endl;
 			}
 		}

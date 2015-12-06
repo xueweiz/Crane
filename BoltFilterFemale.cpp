@@ -35,7 +35,7 @@ void BoltFilterFemale::run()
 			if (tuple.getElement(1) == "female" ) 
 			{
 				++counter;
-				if (counter % 100 == 0)
+				if (counter % 1000 == 0)
 				{
 					std::cout << "Females: " << counter << std::endl;
 				}

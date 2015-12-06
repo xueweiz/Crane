@@ -18,6 +18,8 @@ public:
 
 	virtual void run();
 
+	virtual void emit(Tuple& tuple);
+
 };
 
 #endif

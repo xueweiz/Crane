@@ -17,6 +17,12 @@
 #include "BoltCountJpeg.h"
 #include "BoltRankHtml.h"
 
+
+#include "BoltRankProtocol.h"
+#include "BoltRankBytes.h"
+#include "BoltCountConnections.h"
+#include "BoltSumBytes.h"
+
 #define logFile std::cout
 
 Supervisor::Supervisor(uint32_t port):
@@ -102,6 +108,26 @@ void Supervisor::createListeningThread ()
             {
                 task = new BoltRankHtml("task_add_element",1);
                 std::cout << "Creating rank html" << std::endl;
+            }
+            else if (taskType == CRANE_TASK_COUNT_CONNECTIONS)
+            {
+                task = new BoltCountConnections("task_add_element",1);
+                std::cout << "Creating BoltCountConnections" << std::endl;
+            }
+            else if (taskType == CRANE_TASK_SUM_BYTES)
+            {
+                task = new BoltSumBytes("task_add_element",1);
+                std::cout << "Creating BoltSumBytes" << std::endl;
+            }
+            else if (taskType == CRANE_TASK_RANK_PROTOCOL)
+            {
+                task = new BoltRankProtocol("task_add_element",1);
+                std::cout << "Creating BoltRankProtocol" << std::endl;
+            }
+            else if (taskType == CRANE_TASK_RANK_BYTES)
+            {
+                task = new BoltRankBytes("task_add_element",1);
+                std::cout << "Creating BoltRankBytes" << std::endl;
             }
             else
             {

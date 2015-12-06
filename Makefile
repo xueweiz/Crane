@@ -8,7 +8,10 @@ SRC += Tuple.cpp Bolt.cpp Crane.cpp Supervisor.cpp Spout.cpp
 SRC += BoltGender.cpp BoltSplitGender.cpp 
 SRC += BoltAddElement.cpp BoltFilterMale.cpp BoltFilterFemale.cpp
 SRC += BoltFilterGif.cpp BoltCountHtml.cpp BoltCountJpeg.cpp BoltRankHtml.cpp
-SRC += SpoutCalgary.cpp SpoutTwits.cpp
+SRC += SpoutCalgary.cpp SpoutTwits.cpp SpoutLawrence.cpp
+
+SRC += BoltRankProtocol.cpp BoltRankBytes.cpp
+SRC += BoltSumBytes.cpp BoltCountConnections.cpp
 
 CC_FLAGS = -pthread -std=c++11
 

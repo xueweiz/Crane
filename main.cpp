@@ -12,8 +12,9 @@
 #include "FileSystem.h"
 
 #include "Crane.h"
-//#include "SpoutTwits.h"
+#include "SpoutTwits.h"
 #include "SpoutCalgary.h"
+#include "SpoutLawrence.h"
 
 #include "Supervisor.h"
 #include "BoltGender.h"
@@ -26,6 +27,12 @@
 #include "BoltCountHtml.h"
 #include "BoltCountJpeg.h"
 #include "BoltRankHtml.h"
+
+#include "BoltRankProtocol.h"
+#include "BoltRankBytes.h"
+#include "BoltCountConnections.h"
+#include "BoltSumBytes.h"
+
 
 using namespace std;
 
@@ -187,7 +194,7 @@ int main (int argc, char* argv[])
     {
         crane = new Crane(m, cranePort);
 
-        // APP 1 - Filter by gender splitting.
+        // APP 0 - Filter by gender splitting.
 /*
         SpoutTwits* spout =  new SpoutTwits("spout",1); // Create the spout which generates sentences
         BoltSplitGender* bolt1 =  new BoltSplitGender("bolt1", 3);
@@ -203,11 +210,11 @@ int main (int argc, char* argv[])
         //Bolt subscribe itself to other bolts, different from spouts
         bolt2->subscribe(*bolt1, cranePort);
 */
-/*
-        // APP 2 - Filter by gender against STORM.
 
+        // APP 1 - Filter by gender against STORM.
+/*
         SpoutTwits* spout =  new SpoutTwits("spout",1); // Create the spout which generates sentences
-        BoltAddElement* bolt1   =  new BoltAddElement("bolt1", 4);
+        BoltAddElement* bolt1   =  new BoltAddElement("bolt1", 1);
         BoltFilterMale* bolt2   =  new BoltFilterMale("bolt2", 1);
         BoltFilterFemale* bolt3 =  new BoltFilterFemale("bolt3", 1);
 
@@ -227,9 +234,8 @@ int main (int argc, char* argv[])
         std::cout << "Crane Topology succesfully created... " << std::endl;
 */
 
-
-        // APP 3 - Calgary logs.
-
+        // APP 2 - Calgary logs.
+/*
         SpoutCalgary* spout =  new SpoutCalgary("spout",1); // Create the spout which generates sentences
         BoltFilterGif* bolt1 =  new BoltFilterGif("bolt1", 1);
         BoltCountHtml* bolt2 =  new BoltCountHtml("bolt2", 1);
@@ -252,7 +258,34 @@ int main (int argc, char* argv[])
 
         sleep(3);
         std::cout << "Crane Topology succesfully created... " << std::endl;
+*/
 
+        // APP 3 - Lawrence logs.
+
+        SpoutLawrence* spout =  new SpoutLawrence("spout",1); // Create the spout which generates sentences
+
+        BoltCountConnections* bolt1 =  new BoltCountConnections("bolt1", 1);
+        BoltSumBytes* bolt2 =  new BoltSumBytes("bolt2", 1);
+        BoltRankProtocol* bolt3 =  new BoltRankProtocol("bolt3", 1);
+        BoltRankBytes*  bolt4 =  new BoltRankBytes("bolt4", 1);
+
+        crane->addSpout(*spout);
+        crane->addBolt(*bolt1); // This will load information about ips.
+        crane->addBolt(*bolt2);
+        crane->addBolt(*bolt3);
+        crane->addBolt(*bolt4);
+
+        // Spout subscribe bolts
+        spout->subscribe(*bolt1);
+        spout->subscribe(*bolt2);
+
+        //Bolt subscribe itself to other bolts, different from spouts
+        bolt3->subscribe(*bolt1, cranePort);
+        bolt4->subscribe(*bolt2, cranePort);
+
+        sleep(3);
+        std::cout << "Crane Topology succesfully created... " << std::endl;
+        
     }
 
     std::thread cinListening(listeningCin, &m, &fs, crane);

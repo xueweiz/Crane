@@ -70,6 +70,11 @@ std::string Tuple::getSingleString()
 	return ss.str();
 }
 
+size_t Tuple::getNumElements()
+{
+	return elements.size();
+}
+
 std::string Tuple::getSingleStringComa()
 {
 	std::stringstream ss;

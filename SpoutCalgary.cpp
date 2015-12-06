@@ -57,19 +57,6 @@ std::string SpoutCalgary::getNextAccess()
 {
 	std::string access;
 
-	std::getline(file,access);
-
-	if (file.eof())
-	{
-		file.close();
-		initFile();
-		std::cout << "File start over.. " << std::endl;
-		return "end";
-		
-		sleep(3);
-		std::getline(file,access);
-	}
-
 	std::size_t posGet = std::string::npos;
 	std::size_t posEnd = std::string::npos;
 	std::size_t posInit= std::string::npos;
@@ -77,6 +64,18 @@ std::string SpoutCalgary::getNextAccess()
 	while ( posGet == std::string::npos || posEnd == std::string::npos)
 	{
 		std::getline(file,access);
+
+		if (file.eof())
+		{
+			file.close();
+			initFile();
+			std::cout << "File start over.. " << std::endl;
+			return "end";
+			
+			sleep(3);
+			std::getline(file,access);
+		}
+		
 		posGet = access.find("GET");
 		posInit= posGet + 4;
 		posEnd = access.find(" ", posInit);
@@ -91,9 +90,6 @@ std::string SpoutCalgary::getNextAccess()
 void SpoutCalgary::generateTuples()
 {
 	uint32_t counter = 0;
-	int counterMale = 0;
-	int counterFemale = 0;
-	int totalTuples = 40000;
 
 	initFile();
 
@@ -115,7 +111,7 @@ void SpoutCalgary::generateTuples()
 
 		if (counter % 20 == 0)
 		{
-			usleep(1000);
+			usleep(10000);
 		}
 	}
 }
@@ -169,7 +165,7 @@ void SpoutCalgary::communicationThread()
 				CRANE_TupleMessage msg;
 	            memset(&msg,0, sizeof(CRANE_TupleMessage));
 	            //msg.more = tuples2Send.size() - j - 1;
-	            std::cout << "emiting tuple: " << tuples2Send.at(j).getSingleStringComa() << std::endl;
+	            //std::cout << "emiting tuple: " << tuples2Send.at(j).getSingleStringComa() << std::endl;
 	            
 	            std::string str2Send = tuples2Send.at(j).getSingleString();
 	            str2Send.copy(msg.buffer,str2Send.length(),0);
@@ -189,6 +185,6 @@ void SpoutCalgary::communicationThread()
 	    	*/
 		}
 
-		std::cout << "Done emiting group" << std::endl;
+		//std::cout << "Done emiting group" << std::endl;
 	}
 }

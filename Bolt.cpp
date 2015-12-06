@@ -251,6 +251,7 @@ void Bolt::point2PointThread(uint32_t port4P2P)
 
 	size_t ret;
 	int connFd = listen_socket(listenFd);
+	size_t errorCounter = 0;
 
 	//std::cout<<"Bolt::point2PointThread: Connected "<< port4P2P << std::endl;
 
@@ -271,6 +272,10 @@ void Bolt::point2PointThread(uint32_t port4P2P)
 		if (ret == 0)
 		{
 			std::cout << "Bolt::point2PointThread - problem 0" << std::endl;
+
+			errorCounter++;
+			if(errorCounter > 10)
+				exit(0);
 			continue;
 		}
 

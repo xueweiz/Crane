@@ -189,7 +189,7 @@ void Spout::communicationThread()
 				CRANE_TupleMessage msg;
 	            memset(&msg,0, sizeof(CRANE_TupleMessage));
 	            //msg.more = tuples2Send.size() - j - 1;
-	            std::cout << "emiting tuple: " << tuples2Send.at(j).getSingleStringComa() << std::endl;
+	            //std::cout << "emiting tuple: " << tuples2Send.at(j).getSingleStringComa() << std::endl;
 	            
 	            std::string str2Send = tuples2Send.at(j).getSingleString();
 	            str2Send.copy(msg.buffer,str2Send.length(),0);
@@ -216,7 +216,7 @@ void Spout::communicationThread()
 	    	*/
 		}
 
-		std::cout << "Done emiting group" << std::endl;
+		//std::cout << "Done emiting group" << std::endl;
 	}
 }
 

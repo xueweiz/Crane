@@ -48,3 +48,38 @@ void BoltAddElement::run()
 		}
 	}
 }
+
+
+void BoltAddElement::emit(Tuple& tuple)
+{
+	if (subscriptors.size() == 0)
+	{
+		std::cout << boltId << " - " << taskId <<" - Noone to emit to!" << std::endl;
+		return;
+	}
+
+	std::vector<std::string> localSubscriptorsAdd;
+	std::vector<uint32_t> connFDs;
+
+	for (int i = 0; i < subscriptors.size(); ++i)
+	{
+		uint32_t taskIdx = rand() % subscriptors.at(i).tasks.size(); 
+		connFDs .push_back(subscriptors.at(i).tasks.at(taskIdx).connectionFD);
+	}
+
+	assert(connFDs.size() > 0);
+
+	//std::cout << "emiting tuple: " << tuple.getSingleStringComa() << std::endl;
+
+	CRANE_TupleMessage msg;
+    memset(&msg,0, sizeof(CRANE_TupleMessage));
+
+    std::string str2Send = tuple.getSingleString();
+    str2Send.copy(msg.buffer,str2Send.length(),0);
+
+	for (int i = 0; i < connFDs.size(); ++i)
+	{
+        write(connFDs.at(i), (char*)&msg, sizeof(CRANE_TupleMessage));
+	}
+
+}
