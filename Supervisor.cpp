@@ -12,6 +12,11 @@
 #include "BoltFilterFemale.h"
 #include "BoltAddElement.h"
 
+#include "BoltFilterGif.h"
+#include "BoltCountHtml.h"
+#include "BoltCountJpeg.h"
+#include "BoltRankHtml.h"
+
 #define logFile std::cout
 
 Supervisor::Supervisor(uint32_t port):
@@ -77,6 +82,26 @@ void Supervisor::createListeningThread ()
             {
                 task = new BoltAddElement("task_add_element",1);
                 std::cout << "Creating add element task" << std::endl;
+            }
+            else if (taskType == CRANE_TASK_FILTER_GIF)
+            {
+                task = new BoltFilterGif("task_add_element",1);
+                std::cout << "Creating filter gif" << std::endl;
+            }
+            else if (taskType == CRANE_TASK_COUNT_JPEG)
+            {
+                task = new BoltCountJpeg("task_add_element",1);
+                std::cout << "Creating count jpeg" << std::endl;
+            }
+            else if (taskType == CRANE_TASK_COUNT_HTML)
+            {
+                task = new BoltCountHtml("task_add_element",1);
+                std::cout << "Creating count html" << std::endl;
+            }
+            else if (taskType == CRANE_TASK_RANK_HTML)
+            {
+                task = new BoltRankHtml("task_add_element",1);
+                std::cout << "Creating rank html" << std::endl;
             }
             else
             {

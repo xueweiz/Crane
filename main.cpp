@@ -12,7 +12,8 @@
 #include "FileSystem.h"
 
 #include "Crane.h"
-#include "SpoutTwits.h"
+//#include "SpoutTwits.h"
+#include "SpoutCalgary.h"
 
 #include "Supervisor.h"
 #include "BoltGender.h"
@@ -20,6 +21,11 @@
 #include "BoltFilterMale.h"
 #include "BoltFilterFemale.h"
 #include "BoltAddElement.h"
+
+#include "BoltFilterGif.h"
+#include "BoltCountHtml.h"
+#include "BoltCountJpeg.h"
+#include "BoltRankHtml.h"
 
 using namespace std;
 
@@ -197,7 +203,7 @@ int main (int argc, char* argv[])
         //Bolt subscribe itself to other bolts, different from spouts
         bolt2->subscribe(*bolt1, cranePort);
 */
-
+/*
         // APP 2 - Filter by gender against STORM.
 
         SpoutTwits* spout =  new SpoutTwits("spout",1); // Create the spout which generates sentences
@@ -219,11 +225,34 @@ int main (int argc, char* argv[])
 
         sleep(3);
         std::cout << "Crane Topology succesfully created... " << std::endl;
-    }
-    else
-    {
-        //Supervisor* supervisor =  new Supervisor(cranePort);
-        //supervisor -> run();
+*/
+
+
+        // APP 3 - Calgary logs.
+
+        SpoutCalgary* spout =  new SpoutCalgary("spout",1); // Create the spout which generates sentences
+        BoltFilterGif* bolt1 =  new BoltFilterGif("bolt1", 1);
+        BoltCountHtml* bolt2 =  new BoltCountHtml("bolt2", 1);
+        BoltCountJpeg* bolt3 =  new BoltCountJpeg("bolt3", 1);
+        BoltRankHtml*  bolt4 =  new BoltRankHtml("bolt4", 1);
+
+        crane->addSpout(*spout);
+        crane->addBolt(*bolt1); // This will load information about ips.
+        crane->addBolt(*bolt2);
+        crane->addBolt(*bolt3);
+        crane->addBolt(*bolt4);
+
+        // Spout subscribe bolts
+        spout->subscribe(*bolt1);
+
+        //Bolt subscribe itself to other bolts, different from spouts
+        bolt2->subscribe(*bolt1, cranePort);
+        bolt3->subscribe(*bolt1, cranePort);
+        bolt4->subscribe(*bolt2, cranePort);
+
+        sleep(3);
+        std::cout << "Crane Topology succesfully created... " << std::endl;
+
     }
 
     std::thread cinListening(listeningCin, &m, &fs, crane);

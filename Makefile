@@ -5,7 +5,10 @@ SRC = main.cpp
 SRC += connections.cpp ChronoCpu.cpp Chrono.cpp
 SRC += Membership.cpp FileSystem.cpp 
 SRC += Tuple.cpp Bolt.cpp Crane.cpp Supervisor.cpp Spout.cpp
-SRC += BoltGender.cpp SpoutTwits.cpp BoltSplitGender.cpp BoltAddElement.cpp BoltFilterMale.cpp BoltFilterFemale.cpp
+SRC += BoltGender.cpp BoltSplitGender.cpp 
+SRC += BoltAddElement.cpp BoltFilterMale.cpp BoltFilterFemale.cpp
+SRC += BoltFilterGif.cpp BoltCountHtml.cpp BoltCountJpeg.cpp BoltRankHtml.cpp
+SRC += SpoutCalgary.cpp SpoutTwits.cpp
 
 CC_FLAGS = -pthread -std=c++11
 
