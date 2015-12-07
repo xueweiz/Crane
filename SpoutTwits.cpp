@@ -46,7 +46,7 @@ void SpoutTwits::generateTuples()
 	uint32_t counter = 0;
 	int counterMale = 0;
 	int counterFemale = 0;
-	int totalTuples = 40000;
+	long long totalTuples = 40*1000*1000;
 	while(!killGenerateThread)
 	{
 		std::stringstream ss;
@@ -94,10 +94,10 @@ void SpoutTwits::generateTuples()
 			return;
 		}
 		//usleep(1);
-		if (counter % 20 == 0)
+		/*if (counter % 20 == 0)
 		{
 			usleep(10000);
-		}
+		}*/
 		//sleep(1);
 	}
 }
@@ -107,6 +107,8 @@ void SpoutTwits::communicationThread()
 	size_t tupleCounter =0;
 	while(!killCommunicationThread)
 	{
+		//std::cout<<"SpoutTwits::communicationThread once"<<std::endl;
+
 		if (subscriptors.size() == 0)
 		{
 			std::cout << "Nobody subscribed to this spout" << std::endl;

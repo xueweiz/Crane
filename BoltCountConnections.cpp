@@ -40,6 +40,9 @@ void BoltCountConnections::run()
 			std::stringstream ss;
 			ss << protocol << std::endl;
 			ss << htmlMap[protocol] << std::endl;
+
+			std::cout<<ss.str()<<std::endl;
+			
 			Tuple newTuple(ss.str());
 			emit(newTuple);
 

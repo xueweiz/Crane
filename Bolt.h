@@ -6,6 +6,7 @@
 #include <vector>
 #include <list>
 #include <mutex>
+#include <condition_variable>
 
 #include "crane_types.h"
 #include "Tuple.h"
@@ -33,6 +34,7 @@ protected:
 	std::vector<uint32_t> subscriptorsPort;
 
 	std::mutex tupleQueueLock;
+	std::condition_variable tupleQueueCV;
 	std::list<Tuple> tupleQueue;
 
 	std::thread listening;
@@ -83,6 +85,8 @@ public:
 	CRANE_TaskType getType();
 
 	struct CRANE_TaskInfo getTaskInfo(uint32_t index);
+
+	Tuple getTuple();
 
 };
 

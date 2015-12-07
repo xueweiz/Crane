@@ -24,25 +24,17 @@ void BoltCountJpeg::run()
 	int counter = 0;
 	while(!killRunThread)
 	{
-		tupleQueueLock.lock();
-		if ( !tupleQueue.empty() )
+		
+		Tuple tuple = this->getTuple();
+
+		std::string filename = tuple.getElement(0);
+
+		size_t pos = filename.find(".jp");
+
+		if (pos != std::string::npos) // Not found
 		{
-			Tuple tuple = tupleQueue.front();
-			tupleQueue.pop_front();
-			tupleQueueLock.unlock();
-
-			std::string filename = tuple.getElement(0);
-
-			size_t pos = filename.find(".jp");
-
-			if (pos != std::string::npos) // Not found
-			{
-				std::cout << "Total jpeg: " << ++counter << std::endl;
-			}
+			std::cout << "Total jpeg: " << ++counter << std::endl;
 		}
-		else
-		{
-			tupleQueueLock.unlock();
-		}
+
 	}
 }

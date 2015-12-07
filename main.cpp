@@ -194,7 +194,7 @@ int main (int argc, char* argv[])
     {
         crane = new Crane(m, cranePort);
 
-        // APP 0 - Filter by gender splitting.
+        // APP 0 - Filter by gender splitting.  
 /*
         SpoutTwits* spout =  new SpoutTwits("spout",1); // Create the spout which generates sentences
         BoltSplitGender* bolt1 =  new BoltSplitGender("bolt1", 3);
@@ -211,7 +211,7 @@ int main (int argc, char* argv[])
         bolt2->subscribe(*bolt1, cranePort);
 */
 
-        // APP 1 - Filter by gender against STORM.
+        // APP 1 - Filter by gender against STORM.  30s, 7100 male, 7000 female. 1, 1, 1, 1, 3 machines
 /*
         SpoutTwits* spout =  new SpoutTwits("spout",1); // Create the spout which generates sentences
         BoltAddElement* bolt1   =  new BoltAddElement("bolt1", 1);
@@ -235,33 +235,46 @@ int main (int argc, char* argv[])
 */
 
         // APP 2 - Calgary logs.
-/*
+
         SpoutCalgary* spout =  new SpoutCalgary("spout",1); // Create the spout which generates sentences
         BoltFilterGif* bolt1 =  new BoltFilterGif("bolt1", 1);
-        BoltCountHtml* bolt2 =  new BoltCountHtml("bolt2", 1);
+        //BoltCountHtml* bolt2 =  new BoltCountHtml("bolt2", 1);
         BoltCountJpeg* bolt3 =  new BoltCountJpeg("bolt3", 1);
-        BoltRankHtml*  bolt4 =  new BoltRankHtml("bolt4", 1);
+        //BoltRankHtml*  bolt4 =  new BoltRankHtml("bolt4", 1);
 
         crane->addSpout(*spout);
         crane->addBolt(*bolt1); // This will load information about ips.
-        crane->addBolt(*bolt2);
+        //crane->addBolt(*bolt2);
         crane->addBolt(*bolt3);
-        crane->addBolt(*bolt4);
+        //crane->addBolt(*bolt4);
 
         // Spout subscribe bolts
         spout->subscribe(*bolt1);
 
         //Bolt subscribe itself to other bolts, different from spouts
-        bolt2->subscribe(*bolt1, cranePort);
+        //bolt2->subscribe(*bolt1, cranePort);
         bolt3->subscribe(*bolt1, cranePort);
-        bolt4->subscribe(*bolt2, cranePort);
+        //bolt4->subscribe(*bolt2, cranePort);
+
+
+        SpoutCalgary* spout1 =  new SpoutCalgary("spout1",1); // Create the spout which generates sentences
+        BoltFilterGif* bolt11 =  new BoltFilterGif("bolt11", 1);
+        BoltCountJpeg* bolt31 =  new BoltCountJpeg("bolt31", 1);
+        
+        crane->addSpout(*spout1);
+        crane->addBolt(*bolt11); // This will load information about ips.
+        crane->addBolt(*bolt31);
+        
+        spout1->subscribe(*bolt11);
+        bolt31->subscribe(*bolt11, cranePort);
+
 
         sleep(3);
         std::cout << "Crane Topology succesfully created... " << std::endl;
-*/
+
 
         // APP 3 - Lawrence logs.
-
+/*
         SpoutLawrence* spout =  new SpoutLawrence("spout",1); // Create the spout which generates sentences
 
         BoltCountConnections* bolt1 =  new BoltCountConnections("bolt1", 1);
@@ -285,7 +298,7 @@ int main (int argc, char* argv[])
 
         sleep(3);
         std::cout << "Crane Topology succesfully created... " << std::endl;
-        
+*/        
     }
 
     std::thread cinListening(listeningCin, &m, &fs, crane);

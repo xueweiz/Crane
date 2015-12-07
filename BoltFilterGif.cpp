@@ -24,26 +24,18 @@ void BoltFilterGif::run()
 	int counter = 0;
 	while(!killRunThread)
 	{
-		tupleQueueLock.lock();
-		if ( !tupleQueue.empty() )
+		
+		Tuple tuple = this->getTuple();
+
+		std::string filename = tuple.getElement(0);
+
+		size_t pos = filename.find(".gif");
+
+		if (pos == std::string::npos) // Not found
 		{
-			Tuple tuple = tupleQueue.front();
-			tupleQueue.pop_front();
-			tupleQueueLock.unlock();
-
-			std::string filename = tuple.getElement(0);
-
-			size_t pos = filename.find(".gif");
-
-			if (pos == std::string::npos) // Not found
-			{
-				emit(tuple, filename);
-			}
+			emit(tuple, filename);
 		}
-		else
-		{
-			tupleQueueLock.unlock();
-		}
+		
 	}
 }
 

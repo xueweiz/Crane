@@ -294,16 +294,34 @@ void Bolt::point2PointThread(uint32_t port4P2P)
         std::string newTuple (msg.buffer);
         Tuple tuple(newTuple);
 
-        if(counter++ % 10 == 0)
-        	//std::cout << "Received: " << tuple.getSingleStringComa() << std::endl;
+        //if(counter++ % 10 == 0)
+        //	std::cout << "Received: " << tuple.getSingleStringComa() << std::endl;
         //std::cout << "Received: " << std::endl;
-
-        tupleQueueLock.lock();
+        
+        //std::cout << "receive lock" << std::endl;
+        std::unique_lock<std::mutex> locker( tupleQueueLock );
+        //std::cout << "receive put data" << std::endl;
         tupleQueue.push_back(tuple);
-        tupleQueueLock.unlock();
+        //std::cout << "receive wait others" << std::endl;
+        tupleQueueCV.notify_all();
     }
 
     close(connFd);
+}
+
+Tuple Bolt::getTuple(){
+	//std::cout << "lock" << std::endl;
+	std::unique_lock<std::mutex> locker( tupleQueueLock );
+
+	while( tupleQueue.empty() ){
+		//std::cout << "wait" << std::endl;
+		tupleQueueCV.wait( locker );
+	}
+
+	//std::cout << "get data" << std::endl;
+	Tuple tuple = tupleQueue.front();
+	tupleQueue.pop_front();
+	return tuple;
 }
 
 void Bolt::run()
