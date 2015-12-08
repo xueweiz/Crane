@@ -13,6 +13,8 @@ protected:
 
 	std::ifstream file;
 
+	int readFileTimes = 100;
+	int count = 0;
 	//virtual void communicationThread();
 
 public: 

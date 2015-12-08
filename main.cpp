@@ -251,7 +251,7 @@ int main (int argc, char* argv[])
         SpoutCalgary* spout =  new SpoutCalgary("spout",1); // Create the spout which generates sentences
         BoltFilterGif* bolt1 =  new BoltFilterGif("bolt1", 2);
         //BoltCountHtml* bolt2 =  new BoltCountHtml("bolt2", 1);
-        BoltCountJpeg* bolt3 =  new BoltCountJpeg("bolt3", 2);
+        BoltCountJpeg* bolt3 =  new BoltCountJpeg("bolt3", 1);
         //BoltRankHtml*  bolt4 =  new BoltRankHtml("bolt4", 1);
 
         crane->addSpout(*spout);

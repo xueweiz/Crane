@@ -64,6 +64,7 @@ std::string SpoutCalgary::getNextAccess()
 	std::size_t posEnd = std::string::npos;
 	std::size_t posInit= std::string::npos;
 
+	
 	while ( posGet == std::string::npos || posEnd == std::string::npos)
 	{
 		std::getline(file,access);
@@ -71,11 +72,15 @@ std::string SpoutCalgary::getNextAccess()
 		if (file.eof())
 		{
 			file.close();
-			initFile();
-			std::cout << "File start over.. " << std::endl;
-			return "end";	//only read file once
+
+			count++;
+			if( count >= readFileTimes ){
+				std::cout << "SpoutCalgary::getNextAccess: finished. over "<<count<<"times" << std::endl;
+				return "end";
+			}
 			
-			sleep(3);
+			initFile();
+			std::cout << "SpoutCalgary::getNextAccess: File start over.. "<<count<<" times" << std::endl;
 			std::getline(file,access);
 		}
 		

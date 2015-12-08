@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <ctime>
 
 #include "Bolt.h"
 
@@ -17,6 +18,8 @@ public:
 	virtual ~BoltCountJpeg();
 
 	virtual void run();
+
+	clock_t startTime;
 
 };
 

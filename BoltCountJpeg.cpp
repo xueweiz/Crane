@@ -3,6 +3,7 @@
 #include <fstream>
 #include <sstream>
 #include <assert.h>
+#include <ctime>
 
 #include "connections.h"
 #include "BoltCountJpeg.h"
@@ -21,6 +22,8 @@ BoltCountJpeg::~BoltCountJpeg()
 
 void BoltCountJpeg::run()
 {
+	startTime = clock();
+
 	int counter = 0;
 	numOfElemsInTuple = 1;
 	while(!killRunThread) {
@@ -33,8 +36,20 @@ void BoltCountJpeg::run()
 
 		// Not found
 		if (pos != std::string::npos) {
-			std::cout << "Total jpeg: " << ++counter << std::endl;
+			counter++;
+			if(counter % 1000 == 0){
+				std::cout << "Total jpeg: " << counter << std::endl;
+			}
 		}
-
 	}
+
+	clock_t endTime = clock();
+	double secondsPassed = (endTime - startTime) / CLOCKS_PER_SEC;
+	
+	int seconds = ((int)secondsPassed) % 60;
+	int minutes = ((int)secondsPassed) / 60;
+
+	std::cout << "Total jpeg: " << counter << std::endl;
+	std::cout << "  done in: " << secondsPassed << " seconds"<< std::endl;
+	std::cout << "  which is: " << minutes << " min " <<seconds<<" secs"<< std::endl;
 }
