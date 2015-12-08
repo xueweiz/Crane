@@ -1,3 +1,4 @@
+
 rsync -ru --exclude=".*" ../MP4-Crane remis2@fa15-cs425-g26-01.cs.illinois.edu:/home/remis2
 echo "Machine 1 done!"
 rsync -ru --exclude=".*" ../MP4-Crane remis2@fa15-cs425-g26-02.cs.illinois.edu:/home/remis2

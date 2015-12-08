@@ -25,7 +25,7 @@ void BoltFilterGif::run()
 	sleep(5);	//we assume subscribers will be ready in 2s.
 	this->createEmitQueues();
 	this->createEmittingThreads();
-	std::cout<<"BoltFilterGif::run: should have total ? threads"<<std::endl;
+	//std::cout<<"BoltFilterGif::run: should have total ? threads"<<std::endl;
 
 	while(!killRunThread){
 		Tuple tuple = this->getTuple();

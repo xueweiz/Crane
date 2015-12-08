@@ -31,6 +31,8 @@ void BoltCountJpeg::run()
 		Tuple tuple = this->getTuple();
 
 		std::string filename = tuple.getElement(0);
+		if(filename.compare("end") == 0)
+			break;
 
 		size_t pos = filename.find(".jp");
 

@@ -249,7 +249,7 @@ int main (int argc, char* argv[])
         // APP 2 - Calgary logs.    //44956 in total.
 
         SpoutCalgary* spout =  new SpoutCalgary("spout",1); // Create the spout which generates sentences
-        BoltFilterGif* bolt1 =  new BoltFilterGif("bolt1", 2);
+        BoltFilterGif* bolt1 =  new BoltFilterGif("bolt1", 3);
         //BoltCountHtml* bolt2 =  new BoltCountHtml("bolt2", 1);
         BoltCountJpeg* bolt3 =  new BoltCountJpeg("bolt3", 1);
         //BoltRankHtml*  bolt4 =  new BoltRankHtml("bolt4", 1);

@@ -74,7 +74,7 @@ std::string SpoutCalgary::getNextAccess()
 			file.close();
 
 			count++;
-			if( count >= readFileTimes ){
+			if( count >= 10 ){
 				std::cout << "SpoutCalgary::getNextAccess: finished. over "<<count<<"times" << std::endl;
 				return "end";
 			}
@@ -176,15 +176,19 @@ void SpoutCalgary::generateTuples()
 		std::stringstream ss;
 
 		std::string str = getNextAccess();
-		if(str.compare("end") == 0) {
-			return; 
-		}
 
 		ss << str << std::endl;
 		ss << counter++ << std::endl;
+		if(str.compare("end") == 0) {
+			sleep(2);
+		}
 
 		Tuple imaginary(ss.str());
 		emit(imaginary);	//add tuple to all the subscribing bolts, each bolt select one task
+
+		if(str.compare("end") == 0) {
+			return; 
+		}
 
 		//if (counter % 20 == 0) {
 		//	usleep(10000);
