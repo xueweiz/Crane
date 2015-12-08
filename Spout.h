@@ -40,7 +40,8 @@ protected:
 	virtual void communicationThread();
 	virtual void generateTuples();
 
-	void emit(Tuple& tuple);
+	virtual void emit(Tuple& tuple);
+	virtual void emitAll(Tuple& tuple);
 
 public: 
 

@@ -31,6 +31,13 @@ void BoltFilterGif::run()
 		Tuple tuple = this->getTuple();
 
 		std::string filename = tuple.getElement(0);
+		
+		if(filename.compare("CRANE_FINISH") == 0) {
+			sleep(2);	//to wait for other task of this bolt to finish job
+			emitAll(tuple);
+			//sleep(60*60);
+			break; 
+		}
 
 		size_t pos = filename.find(".gif");
 

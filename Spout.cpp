@@ -271,6 +271,21 @@ void Spout::emit(Tuple& tuple) {
 	}
 }
 
+//emit tuple to each subscribing bolt, to all the tasks
+void Spout::emitAll(Tuple& tuple) {
+	if (subscriptors.size() == 0) {
+		std::cout << "Spout::emit: Emiting but bolt subscribing me" << std::endl;
+		sleep(1);
+		return;
+	}
+	//select queue
+	for(int i=0; i < subscriptors.size(); i++){
+		//put to queue, and notify all
+		for(int j = 0; j < subscriptors[i].tasks.size(); j++)
+			addToTupleQueue( emitQueues[i][j], tuple );
+	}
+}
+
 void Spout::addToTupleQueue(TupleQueue * tupleQueue, Tuple & tuple){
 	std::unique_lock<std::mutex> locker( tupleQueue->lock );
     tupleQueue->queue.push_back(tuple);

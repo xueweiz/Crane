@@ -59,6 +59,7 @@ public:
 
 	/* The default function will emit to all the subscribed bolts */
 	virtual void emit(Tuple& tuple);
+	virtual void emitAll(Tuple& tuple);
 
 	std::vector<struct CRANE_TaskInfo> tasks;
 

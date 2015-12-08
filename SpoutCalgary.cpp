@@ -76,7 +76,7 @@ std::string SpoutCalgary::getNextAccess()
 			count++;
 			if( count >= readFileTimes ){
 				std::cout << "SpoutCalgary::getNextAccess: finished. over "<<count<<"times" << std::endl;
-				return "end";
+				return "CRANE_FINISH";
 			}
 			
 			initFile();
@@ -95,73 +95,6 @@ std::string SpoutCalgary::getNextAccess()
 	return access;
 }
 
-
-//we should change this method into emitTupleThread();
-/*
-void SpoutCalgary::communicationThread()	//send tuple to bolt
-{
-	while(!killCommunicationThread)	{
-		if (subscriptors.size() == 0) {
-			std::cout << "Nobody subscribed to this spout" << std::endl;
-			sleep(1);
-			continue;
-		}
-
-		std::vector<Tuple> tuples2Send;
-		tupleQueueLock.lock();
-		if (!tupleQueue.empty()) {
-			for (int i = 0; i < 10 && !tupleQueue.empty(); ++i)
-			{
-				tuples2Send.push_back(tupleQueue.front());
-				tupleQueue.pop_front();
-			}
-		}
-		tupleQueueLock.unlock();
-
-		if (tuples2Send.size() == 0) {
-			//std::cout << "Spout::communicationThread : No tuples in queue" << std::endl;
-			//sleep(1);
-			continue;
-		}
-
-		std::vector<uint32_t> connFDs;
-
-		for (int i = 0; i < subscriptors.size(); ++i) {
-			uint32_t taskId = rand() % subscriptors.at(i).tasks.size(); 
-			//for (int j = 0; j < subscriptors.at(i).tasks.size(); ++j) {
-				connFDs .push_back(subscriptors.at(i).tasks.at(taskId).connectionFD);
-			//}
-		}
-
-		for (int i = 0; i < connFDs.size(); ++i) {
-	        for (int j = 0; j < tuples2Send.size(); ++j) {
-				CRANE_TupleMessage msg;
-	            memset(&msg,0, sizeof(CRANE_TupleMessage));
-	            //msg.more = tuples2Send.size() - j - 1;
-	            //std::cout << "emiting tuple: " << tuples2Send.at(j).getSingleStringComa() << std::endl;
-	            
-	            std::string str2Send = tuples2Send.at(j).getSingleString();
-	            str2Send.copy(msg.buffer,str2Send.length(),0);
-	            assert(str2Send.length() > 0);
-
-		        write(connFDs.at(i), (char*)&msg, sizeof(CRANE_TupleMessage));
-	    	}
-	    	
-	    	//CRANE_Message ack;
-	    	//ack.ack = 0;
-	    	//read(connFDs.at(i), &ack, sizeof(CRANE_Message));
-
-	    	//if(ack.ack != 1)
-	    	//{
-	    		//std::cout << "Spout::communicationThread : ACK error" << std::endl;
-	    	//}
-		}
-		//std::cout << "Done emiting group" << std::endl;
-	}
-}
-*/
-
-
 /************************************ CHANGE *****************************************/
 
 
@@ -171,13 +104,20 @@ void SpoutCalgary::generateTuples()
 
 	initFile();
 
-	while(!killGenerateThread)
-	{
+	while(!killGenerateThread) {
 		std::stringstream ss;
 
 		std::string str = getNextAccess();
-		if(str.compare("end") == 0) {
-			return; 
+		if(str.compare("CRANE_FINISH") == 0) {
+			//std::cout<<"SpoutCalgary::generateTuples: get finish string"<<std::endl;
+			ss << str << std::endl;
+			ss << counter++ << std::endl;
+			
+			Tuple finishTuple(ss.str());
+			
+			//emitAll(finishTuple);
+			emit(finishTuple);
+			return;
 		}
 
 		ss << str << std::endl;
@@ -185,9 +125,5 @@ void SpoutCalgary::generateTuples()
 
 		Tuple imaginary(ss.str());
 		emit(imaginary);	//add tuple to all the subscribing bolts, each bolt select one task
-
-		//if (counter % 20 == 0) {
-		//	usleep(10000);
-		//}
 	}
 }

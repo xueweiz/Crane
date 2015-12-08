@@ -575,38 +575,6 @@ void Bolt::pullFromEmitQueue( std::list<Tuple>& sendQueue, TupleQueue* myQueue )
 	sendQueue.splice( sendQueue.begin(), myQueue->queue, myQueue->queue.begin(), myQueue->queue.end() );
 }
 
-/*
-void Bolt::emit(Tuple& tuple) {
-	if (subscriptors.size() == 0) {
-		std::cout << boltId << " - " << taskId <<" - Noone to emit to!" << std::endl;
-		return;
-	}
-
-	std::vector<uint32_t> connFDs;
-
-	for (int i = 0; i < subscriptors.size(); ++i) {
-		for (int j = 0; j < subscriptors.at(i).tasks.size(); ++j) {
-			connFDs .push_back(subscriptors.at(i).tasks.at(j).connectionFD);
-		}
-	}
-
-	assert(connFDs.size() > 0);
-	//std::cout << "emiting tuple: " << tuple.getSingleStringComa() << std::endl;
-	CRANE_TupleMessage msg;
-
-	std::string str2Send = tuple.getSingleString();
-
-	memset(&msg,0, sizeof(CRANE_TupleMessage));
-    str2Send.copy(msg.buffer,str2Send.length(),0);
-	
-	for (int i = 0; i < connFDs.size(); ++i) {
-        write(connFDs.at(i), (char*)&msg, sizeof(CRANE_TupleMessage));
-	}
-	//std::cout << "emiting tuple: " << tuple.getSingleStringComa() << std::endl;
-}
-*/
-
-//done
 //emit tuple to each subscribing bolt, but only one task
 void Bolt::emit(Tuple& tuple) {
 	if (subscriptors.size() == 0) {
@@ -625,6 +593,21 @@ void Bolt::emit(Tuple& tuple) {
 
 		//put to queue, and notify all
 		addToTupleQueue( emitQueues[i][j], tuple );
+	}
+}
+
+//emit tuple to each subscribing bolt, to all tasks
+void Bolt::emitAll(Tuple& tuple) {
+	if (subscriptors.size() == 0) {
+		std::cout << "Spout::emit: Emiting but bolt subscribing me" << std::endl;
+		sleep(1);
+		return;
+	}
+	//select queue
+	for(int i=0; i < subscriptors.size(); i++){
+		//put to queue, and notify all
+		for(int j = 0; j < subscriptors[i].tasks.size(); j++)
+			addToTupleQueue( emitQueues[i][j], tuple );
 	}
 }
 

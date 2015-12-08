@@ -31,6 +31,9 @@ void BoltCountJpeg::run()
 		Tuple tuple = this->getTuple();
 
 		std::string filename = tuple.getElement(0);
+		if(filename.compare("CRANE_FINISH") == 0) {
+			break; 
+		}
 
 		size_t pos = filename.find(".jp");
 
@@ -52,4 +55,6 @@ void BoltCountJpeg::run()
 	std::cout << "Total jpeg: " << counter << std::endl;
 	std::cout << "  done in: " << secondsPassed << " seconds"<< std::endl;
 	std::cout << "  which is: " << minutes << " min " <<seconds<<" secs"<< std::endl;
+
+	sleep(60*60);
 }
