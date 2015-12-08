@@ -21,66 +21,23 @@ BoltFilterGif::~BoltFilterGif()
 
 void BoltFilterGif::run()
 {
-	int counter = 0;
-	while(!killRunThread)
-	{
-		
+	numOfElemsInTuple = 1;
+	sleep(5);	//we assume subscribers will be ready in 2s.
+	this->createEmitQueues();
+	this->createEmittingThreads();
+	std::cout<<"BoltFilterGif::run: should have total ? threads"<<std::endl;
+
+	while(!killRunThread){
 		Tuple tuple = this->getTuple();
 
 		std::string filename = tuple.getElement(0);
 
 		size_t pos = filename.find(".gif");
 
-		if (pos == std::string::npos) // Not found
-		{
-			emit(tuple, filename);
-		}
-		
-	}
-}
-
-void BoltFilterGif::emit(Tuple& tuple, std::string str)
-{
-	if (subscriptors.size() == 0)
-	{
-		std::cout << boltId << " - " << taskId <<" - Noone to emit to!" << std::endl;
-		return;
-	}
-
-	std::vector<std::string> localSubscriptorsAdd;
-	std::vector<uint32_t> connFDs;
-
-	std::hash<std::string> hash_fn;
-    std::size_t str_hash = hash_fn(str);
-
-	for (int i = 0; i < subscriptors.size(); ++i)
-	{
-
-		size_t taskIdx = str_hash % subscriptors.at(i).tasks.size();
-		if(subscriptors.at(i).tasks.size() > taskIdx)
-		{
-			connFDs .push_back(subscriptors.at(i).tasks.at(taskIdx).connectionFD);
-			//localSubscriptorsPort.push_back(subscriptors.at(i).tasks.at(taskIdx).port);
-		}
-		else
-		{
-			std::cout << "BoltFilterGif::emit - TaskId IMPOSSIBLE" << std::endl;
-			return;
+		// Not found
+		if (pos == std::string::npos) {
+			//emit(tuple, filename);
+			emit(tuple);
 		}
 	}
-
-	assert(connFDs.size() > 0);
-
-
-	CRANE_TupleMessage msg;
-    memset(&msg,0, sizeof(CRANE_TupleMessage));
-
-    std::string str2Send = tuple.getSingleString();
-    str2Send.copy(msg.buffer,str2Send.length(),0);
-
-	for (int i = 0; i < connFDs.size(); ++i)
-	{
-        write(connFDs.at(i), (char*)&msg, sizeof(CRANE_TupleMessage));
-	}
-
 }

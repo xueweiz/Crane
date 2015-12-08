@@ -13,7 +13,7 @@ protected:
 
 	std::ifstream file;
 
-	virtual void communicationThread();
+	//virtual void communicationThread();
 
 public: 
 	SpoutCalgary(std::string name, unsigned int parallel_level);

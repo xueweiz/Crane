@@ -6,9 +6,11 @@
 #include <vector>
 #include <list>
 #include <mutex>
+#include <condition_variable>
 
 #include "crane_types.h"
 #include "Tuple.h"
+#include "connections.h"
 #include "Bolt.h"
 
 class Spout
@@ -54,6 +56,18 @@ public:
 	uint32_t getParallelLevel();
 	std::string getName();
 
+	std::vector< std::vector< std::thread * > > emittingThreads;
+	bool killEmittingThread;
+	void emitTupleThread(int * boltNum, int * taskNum);
+	
+	std::vector< std::vector< TupleQueue* > > emitQueues;
+
+	void createEmitQueues();
+	void createEmittingThreads();
+
+	void pullFromEmitQueue( std::list<Tuple>& sendQueue, TupleQueue* myQueue );
+
+	void addToTupleQueue(TupleQueue * queue, Tuple & tuple);
 };
 
 #endif

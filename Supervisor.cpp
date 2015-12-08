@@ -135,7 +135,8 @@ void Supervisor::createListeningThread ()
                 exit(0);
             }
 
-            task->setPort(portCounter++);
+            task->setPort(portCounter);
+            portCounter += 10;
             task->setTaskId(taskIdSeed++);
             task->setParallelId(msg.taskId);
             bolts.push_back((Bolt*)task);   
@@ -150,6 +151,11 @@ void Supervisor::createListeningThread ()
         }
         else if (msgType == MSG_SUBSCRIPTION)
         {
+            /*if(msg.port == 0){
+                std::cout << "One Bolt Done! " << std::endl;
+                continue;
+            }*/
+
             bool found = false;
             std::string ip(msg.string);
             for (int i = 0; i < bolts.size(); ++i)

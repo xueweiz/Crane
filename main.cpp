@@ -5,6 +5,8 @@
 #include <iomanip>
 #include <thread>
 #include <stdlib.h>     // atoi
+#include <unistd.h>
+#include <signal.h>
 
 #include "constant.h"
 #include "connections.h"
@@ -163,9 +165,18 @@ void listeningCin(Membership* m, FileSystem* fs, Crane* crane)
     return;
 }
 
+int filesystemPort;
+
+void pipeSignalHandler(int signum){
+    std::cout<<"catch signal "<<signum<<std::endl;
+    return;
+}
+
 int main (int argc, char* argv[])
 {
     srand (time(NULL));
+
+    signal(SIGPIPE, pipeSignalHandler);
 
     system("rm files/*");
     system("clear");
@@ -173,7 +184,8 @@ int main (int argc, char* argv[])
     int port = atoi(argv[1]);
     bool isIntroducer = atoi(argv[2]);
     int membershipPort = port;
-    int filesystemPort = port+21;
+    //int filesystemPort = port+21;
+    filesystemPort = port+21;
     int cranePort      = port+23;
 
     std::cout << std::endl << "CS425 - MP4: Crane System" ;
@@ -234,12 +246,12 @@ int main (int argc, char* argv[])
         std::cout << "Crane Topology succesfully created... " << std::endl;
 */
 
-        // APP 2 - Calgary logs.
+        // APP 2 - Calgary logs.    //44956 in total.
 
         SpoutCalgary* spout =  new SpoutCalgary("spout",1); // Create the spout which generates sentences
-        BoltFilterGif* bolt1 =  new BoltFilterGif("bolt1", 1);
+        BoltFilterGif* bolt1 =  new BoltFilterGif("bolt1", 2);
         //BoltCountHtml* bolt2 =  new BoltCountHtml("bolt2", 1);
-        BoltCountJpeg* bolt3 =  new BoltCountJpeg("bolt3", 1);
+        BoltCountJpeg* bolt3 =  new BoltCountJpeg("bolt3", 2);
         //BoltRankHtml*  bolt4 =  new BoltRankHtml("bolt4", 1);
 
         crane->addSpout(*spout);
@@ -257,7 +269,7 @@ int main (int argc, char* argv[])
         //bolt4->subscribe(*bolt2, cranePort);
 
 
-        SpoutCalgary* spout1 =  new SpoutCalgary("spout1",1); // Create the spout which generates sentences
+        /*SpoutCalgary* spout1 =  new SpoutCalgary("spout1",1); // Create the spout which generates sentences
         BoltFilterGif* bolt11 =  new BoltFilterGif("bolt11", 1);
         BoltCountJpeg* bolt31 =  new BoltCountJpeg("bolt31", 1);
         
@@ -267,9 +279,9 @@ int main (int argc, char* argv[])
         
         spout1->subscribe(*bolt11);
         bolt31->subscribe(*bolt11, cranePort);
+        */
 
-
-        sleep(3);
+        sleep(5);   //we assume bolts will be ready in 5s
         std::cout << "Crane Topology succesfully created... " << std::endl;
 
 

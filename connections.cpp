@@ -302,7 +302,7 @@ int robustRead(int connFd, char * buffer, int length){
             buffer += add;
         }
         else if( add < 0 ){
-            return -10;
+            return add;
         }
         else if(add == 0){
             break;
@@ -318,8 +318,8 @@ int robustWrite(int connFd, char * buffer, int length){
             count += add;
             buffer += add;
         }
-        else if( add < 0 ){
-            return -1;
+        else if( add <= 0 ){
+            return add;
         }
     }
     return count;
@@ -327,7 +327,7 @@ int robustWrite(int connFd, char * buffer, int length){
 
 //write large package on socket
 size_t splitWrite( int connFd, char * data, size_t size ){
-    
+    int ret = 0;
     int msg_num = size / BUFFER_MAX + 1;
     int rest = size % ((int)BUFFER_MAX);
     
@@ -341,13 +341,17 @@ size_t splitWrite( int connFd, char * data, size_t size ){
     char writeSuccess = 0;
     for(int i=0; i < msg_num; i++){
         //write each message, max size is BUFFER_MAX
-        robustWrite( connFd, data + msgs[i].begin, msgs[i].length );
+        ret = robustWrite( connFd, data + msgs[i].begin, msgs[i].length );
+        if(ret <= 0)
+            return ret;
         
         //cout<<"Server: sent " << msgs[i].length << endl;
         //usleep(200*1000);
         
         //make sure client do got the data
-        robustRead( connFd, &writeSuccess, 1 );
+        ret = robustRead( connFd, &writeSuccess, 1 );
+        if(ret <= 0)
+            return ret;
         
         //cout<<"Server: recv "<<(int)writeSuccess<<endl;
         //usleep(200*1000);
@@ -359,7 +363,7 @@ size_t splitWrite( int connFd, char * data, size_t size ){
 }
 
 size_t splitRead( int connFd, char * data, size_t size ){
-    
+    int ret = 0;
     int msg_num = size / BUFFER_MAX + 1;
     int rest = size % ((int)BUFFER_MAX);
     
@@ -377,7 +381,8 @@ size_t splitRead( int connFd, char * data, size_t size ){
 
         //read message from socket. max size BUFFER_MAX
         readSize = robustRead( connFd, data + msgs[i].begin, msgs[i].length );
-        
+        if(readSize <= 0)
+            return readSize;
         //cout<<"client recv size :" << readSize << endl;
         //usleep(200*1000);
 
@@ -386,7 +391,9 @@ size_t splitRead( int connFd, char * data, size_t size ){
         else    readSuccess = 0;
 
         //tell server the data transmission status (good or fail)
-        robustWrite( connFd, &readSuccess, 1);
+        ret = robustWrite( connFd, &readSuccess, 1);
+        if(ret <= 0)
+            return ret;
         
         //cout<<"Client: sent "<<endl;
         //usleep(200*1000);

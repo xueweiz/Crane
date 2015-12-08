@@ -17,8 +17,6 @@ public:
 	virtual ~BoltFilterGif();
 
 	virtual void run();
-	void emit(Tuple& tuple, std::string str);
-
 };
 
 #endif

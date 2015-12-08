@@ -39,16 +39,17 @@ protected:
 
 	std::thread listening;
 	bool killListeningThread;
+	void listeningThread();	//administor
+
+	
 
 	std::thread runThread;
 	bool killRunThread;
 
-	void listeningThread();
-	void point2PointThread(uint32_t port);
-
 	CRANE_TaskType type;
 
 public: 
+	int numOfElemsInTuple = -1;	//need to be set at compile time
 
 	Bolt(std::string, unsigned int parallel_level);
 	virtual ~Bolt();
@@ -88,6 +89,19 @@ public:
 
 	Tuple getTuple();
 
+	std::vector< std::vector< std::thread * > > emittingThreads;
+	bool killEmittingThread;
+	void emitTupleThread(int * boltNum, int * taskNum);
+	
+	void addToTupleQueue(TupleQueue * tupleQueue, Tuple & tuple);
+	std::vector< std::vector< TupleQueue* > > emitQueues;
+	void pullFromEmitQueue( std::list<Tuple>& sendQueue, TupleQueue* myQueue );
+
+	void createEmitQueues();
+	void createEmittingThreads();
+
+	void point2PointThread(uint32_t port);	//tuple read
+	void readTupleQueueFromBuffer( std::list<Tuple> & recvQueue, char * buffer );
 };
 
 #endif

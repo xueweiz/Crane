@@ -1,6 +1,11 @@
 #ifndef _CraneTypes_H_
 #define _CraneTypes_H_
 
+#include "Tuple.h"
+#include <list>
+#include <mutex>
+#include <condition_variable>
+
 typedef enum CRANE_MessageType
 {
     MSG_CREATE_TASK,
@@ -8,7 +13,9 @@ typedef enum CRANE_MessageType
     MSG_CREATE_ACK,
     MSG_SUBSCRIPTION,
     
-    MSG_TASK_EMPTY
+    MSG_TASK_EMPTY, 
+
+    MSG_READ_READY
 } crane_MessageType;
 
 typedef enum CRANE_TaskType
@@ -60,10 +67,20 @@ struct CRANE_TaskInfo
 	uint32_t connectionFD;
 };
 
+class TupleQueue{
+public:
+    std::mutex lock;
+    std::condition_variable cv;
+    std::list<Tuple> queue;
+};
+
 struct BoltSubscriptor
 {
 	uint32_t boltId;
 	std::vector<struct CRANE_TaskInfo> tasks;
+    std::vector<TupleQueue*> queues;
 };
+
+
 
 #endif

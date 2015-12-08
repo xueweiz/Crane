@@ -22,8 +22,8 @@ BoltCountJpeg::~BoltCountJpeg()
 void BoltCountJpeg::run()
 {
 	int counter = 0;
-	while(!killRunThread)
-	{
+	numOfElemsInTuple = 1;
+	while(!killRunThread) {
 		
 		Tuple tuple = this->getTuple();
 
@@ -31,8 +31,8 @@ void BoltCountJpeg::run()
 
 		size_t pos = filename.find(".jp");
 
-		if (pos != std::string::npos) // Not found
-		{
+		// Not found
+		if (pos != std::string::npos) {
 			std::cout << "Total jpeg: " << ++counter << std::endl;
 		}
 

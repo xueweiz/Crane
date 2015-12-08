@@ -8,11 +8,9 @@
 
 class Tuple
 {
-
-private: 
-	std::vector<std::string> elements;
-
 public: 
+	std::vector<std::string> elements;
+	
 	Tuple();
 	Tuple(std::vector<std::string> v);
 	Tuple(std::string str);

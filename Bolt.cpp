@@ -1,3 +1,4 @@
+#include <cstring>
 #include <iostream>
 #include <cstdlib>
 #include <fstream>
@@ -12,6 +13,7 @@ Bolt::Bolt(std::string name, uint32_t parallel_level) :
 {
 	type = CRANE_TASK_EMPTY;
 	boltId = 9999999; // This should be assign by crane, if found this number is an error. 
+	killEmittingThread = false;
 }
 
 Bolt::~Bolt()
@@ -67,45 +69,7 @@ void Bolt::subscribe(Bolt& bolt, uint32_t cranePort)
 
 }
 
-void Bolt::emit(Tuple& tuple)
-{
-	if (subscriptors.size() == 0)
-	{
-		std::cout << boltId << " - " << taskId <<" - Noone to emit to!" << std::endl;
-		return;
-	}
 
-	std::vector<uint32_t> connFDs;
-
-	for (int i = 0; i < subscriptors.size(); ++i)
-	{
-		for (int j = 0; j < subscriptors.at(i).tasks.size(); ++j)
-		{
-			connFDs .push_back(subscriptors.at(i).tasks.at(j).connectionFD);
-		}
-	}
-
-	assert(connFDs.size() > 0);
-
-	//std::cout << "emiting tuple: " << tuple.getSingleStringComa() << std::endl;
-
-	CRANE_TupleMessage msg;
-
-	std::string str2Send = tuple.getSingleString();
-
-	memset(&msg,0, sizeof(CRANE_TupleMessage));
-    str2Send.copy(msg.buffer,str2Send.length(),0);
-
-    //std::string sent(msg.buffer);
-    //std::cout << "Sent: " << sent << std::endl;
-	
-	for (int i = 0; i < connFDs.size(); ++i)
-	{
-        write(connFDs.at(i), (char*)&msg, sizeof(CRANE_TupleMessage));
-	}
-
-	//std::cout << "emiting tuple: " << tuple.getSingleStringComa() << std::endl;
-}
 
 struct CRANE_TaskInfo Bolt::getTaskInfo(uint32_t index)
 {
@@ -179,13 +143,14 @@ void Bolt::addSubscriptor(std::string ip, uint32_t port, uint32_t boltId)
 	subscriptorsAdd.push_back(ip);
 	subscriptorsPort.push_back(port);
 
+	
 	//std::cout << "New subscriptor " << ip << " - " << port << std::endl;
 }
 
 void Bolt::setPort(uint32_t port)
 {
 	this->port = port;
-	portSeed = port + 111;
+	portSeed = port + 1111;
 
 	killListeningThread = true;
 	//std::cout << "Waiting for thread to finish.. " << std::endl;
@@ -206,108 +171,7 @@ uint32_t Bolt::getPort()
 
 }
 
-// Admin listening thread
-void Bolt::listeningThread()
-{
-	int listenFd = open_socket(port); 
 
-    //std::cout<<"listeningThread: created at port "<< port << std::endl;
-
-	while(!killListeningThread)
-    {
-    	size_t ret;
-    	int connFd = listen_socket(listenFd);
-    	//std::cout << "Connected"<< std::endl;
-
-        CRANE_Message msg;
-		ret = read(connFd, &msg, sizeof(CRANE_Message));
-    	if (msg.msgType == MSG_SUBSCRIPTION)
-		{
-			std::thread* th = new std::thread(&Bolt::point2PointThread, this, portSeed++);
-			th->detach();
-
-			msg.port = portSeed-1;
-			write(connFd, &msg, sizeof(CRANE_Message));
-	        //std::cout << "Received: " << std::endl;
-		}
-		else
-		{
-			std::cout << "This is a huge error" << std::endl;
-		}
-        
-        close(connFd);
-    }
-
-    std::cout<<"listeningThread: Finished. Used to listen at "<< port << std::endl;
-
-   
-}
-
-// Reading thread
-void Bolt::point2PointThread(uint32_t port4P2P)
-{
-	int listenFd = open_socket(port4P2P);
-	//std::cout<<"Bolt::point2PointThread: created at port "<< port4P2P << std::endl;
-
-	size_t ret;
-	int connFd = listen_socket(listenFd);
-	size_t errorCounter = 0;
-
-	//std::cout<<"Bolt::point2PointThread: Connected "<< port4P2P << std::endl;
-
-	static uint32_t counter = 0;
-    
-    while (!killListeningThread) // this is dangeorus
-    {
-    	CRANE_TupleMessage msg;
-    	memset(&msg,0, sizeof(CRANE_TupleMessage));
-		ret = read(connFd, (char*)&msg, sizeof(CRANE_TupleMessage));
-
-		if (ret < 0)
-		{
-			std::cout << "Bolt::point2PointThread - problem reading" << std::endl;
-			continue;
-		}
-
-		if (ret == 0)
-		{
-			std::cout << "Bolt::point2PointThread - problem 0" << std::endl;
-
-			errorCounter++;
-			if(errorCounter > 10)
-				exit(0);
-			continue;
-		}
-
-		if (ret != sizeof(CRANE_TupleMessage))
-		{
-			uint32_t aux = ret;
-			while (aux < sizeof(CRANE_TupleMessage))
-			{
-				ret = read(connFd, (char*) (&msg + aux), sizeof(CRANE_TupleMessage) - aux);
-				aux += ret;
-			}
-			//std::cout << "Bolt::point2PointThread - Framing error (" << sizeof(CRANE_TupleMessage) << "): received: " << ret << std::endl;
-			/* code */
-		}
-
-        std::string newTuple (msg.buffer);
-        Tuple tuple(newTuple);
-
-        //if(counter++ % 10 == 0)
-        //	std::cout << "Received: " << tuple.getSingleStringComa() << std::endl;
-        //std::cout << "Received: " << std::endl;
-        
-        //std::cout << "receive lock" << std::endl;
-        std::unique_lock<std::mutex> locker( tupleQueueLock );
-        //std::cout << "receive put data" << std::endl;
-        tupleQueue.push_back(tuple);
-        //std::cout << "receive wait others" << std::endl;
-        tupleQueueCV.notify_all();
-    }
-
-    close(connFd);
-}
 
 Tuple Bolt::getTuple(){
 	//std::cout << "lock" << std::endl;
@@ -387,3 +251,398 @@ std::string Bolt::getIPByTask(uint32_t task)
 	return tasks.at(task).ip_str;
 }
 
+// Admin listening thread
+void Bolt::listeningThread()
+{
+	int listenFd = open_socket(port); 
+
+    //std::cout<<"listeningThread: created at port "<< port << std::endl;
+
+	while(!killListeningThread)
+    {
+    	size_t ret;
+    	int connFd = listen_socket(listenFd);
+    	//std::cout << "Connected"<< std::endl;
+
+        CRANE_Message msg;
+		ret = read(connFd, &msg, sizeof(CRANE_Message));
+    	if (msg.msgType == MSG_SUBSCRIPTION)
+		{
+			std::thread* th = new std::thread(&Bolt::point2PointThread, this, portSeed++);
+			th->detach();
+
+			msg.port = portSeed-1;
+			write(connFd, &msg, sizeof(CRANE_Message));
+	        //std::cout << "Received: " << std::endl;
+		}
+		else
+		{
+			std::cout << "This is a huge error" << std::endl;
+		}
+        
+        close(connFd);
+    }
+    std::cout<<"listeningThread: Finished. Used to listen at "<< port << std::endl;
+}
+
+
+
+
+//std::vector< std::thread *> emitting;
+//bool killEmittingThread;
+//void emitTupleThread(int * boltNum, int * taskNum);	
+//std::vector< std::vector< TupleQueue* > > emitQueues;
+
+void Bolt::createEmitQueues(){
+	emitQueues.clear();
+	int count = 0;
+	for(int i=0; i < subscriptors.size(); i++){
+		std::vector< TupleQueue* > tmp;
+		for(int j=0; j < subscriptors[i].tasks.size(); j++){
+			TupleQueue* tmpQueue = new TupleQueue();
+			tmp.push_back(tmpQueue);
+			count++;
+		}
+		emitQueues.push_back(tmp);
+	}
+
+	std::cout<<"Bolt::createEmitQueues: total queue "<<count<<std::endl;
+}
+void Bolt::createEmittingThreads(){
+	emittingThreads.clear();
+	int count = 0;
+
+	for(int i=0; i < subscriptors.size(); i++){
+		std::vector< std::thread* > tmp; 
+
+		for(int j=0; j < subscriptors[i].tasks.size(); j++){
+			int * boltNum = new int(i);
+			int * taskNum = new int(j);
+			
+			std::thread* th = new std::thread(&Bolt::emitTupleThread, this, boltNum, taskNum);
+			th->detach();
+
+			tmp.push_back(th);
+			count++;
+		}
+
+		emittingThreads.push_back(tmp);
+	}
+
+	std::cout<<"Bolt::createEmittingThreads: subscriped by "<< count <<std::endl;
+}
+
+
+
+
+/************************************ CHANGE *****************************************/
+
+
+
+// Reading thread
+/*
+void Bolt::point2PointThread(uint32_t port4P2P)
+{
+	int listenFd = open_socket(port4P2P);
+	//std::cout<<"Bolt::point2PointThread: created at port "<< port4P2P << std::endl;
+
+	size_t ret;
+	int connFd = listen_socket(listenFd);
+	size_t errorCounter = 0;
+
+	//std::cout<<"Bolt::point2PointThread: Connected "<< port4P2P << std::endl;
+
+	static uint32_t counter = 0;
+    
+    while (!killListeningThread) // this is dangeorus
+    {
+    	CRANE_TupleMessage msg;
+    	memset(&msg,0, sizeof(CRANE_TupleMessage));
+		ret = read(connFd, (char*)&msg, sizeof(CRANE_TupleMessage));
+
+		if (ret < 0)
+		{
+			std::cout << "Bolt::point2PointThread - problem reading" << std::endl;
+			continue;
+		}
+
+		if (ret == 0)
+		{
+			std::cout << "Bolt::point2PointThread - problem 0" << std::endl;
+
+			errorCounter++;
+			if(errorCounter > 10)
+				exit(0);
+			continue;
+		}
+
+		if (ret != sizeof(CRANE_TupleMessage))
+		{
+			uint32_t aux = ret;
+			while (aux < sizeof(CRANE_TupleMessage))
+			{
+				ret = read(connFd, (char*) (&msg + aux), sizeof(CRANE_TupleMessage) - aux);
+				aux += ret;
+			}
+			//std::cout << "Bolt::point2PointThread - Framing error (" << sizeof(CRANE_TupleMessage) << "): received: " << ret << std::endl;
+			// code 
+		}
+
+        std::string newTuple (msg.buffer);
+        Tuple tuple(newTuple);
+
+        //if(counter++ % 10 == 0)
+        //	std::cout << "Received: " << tuple.getSingleStringComa() << std::endl;
+        //std::cout << "Received: " << std::endl;
+        
+        //std::cout << "receive lock" << std::endl;
+        std::unique_lock<std::mutex> locker( tupleQueueLock );
+        //std::cout << "receive put data" << std::endl;
+        tupleQueue.push_back(tuple);
+        //std::cout << "receive wait others" << std::endl;
+        tupleQueueCV.notify_all();
+    }
+
+    close(connFd);
+}
+*/
+
+void Bolt::point2PointThread(uint32_t port4P2P)
+{
+	int listenFd = open_socket(port4P2P);
+	int connFd = listen_socket(listenFd);
+	//std::cout<<"Bolt::point2PointThread: created at port "<< port4P2P << std::endl;
+
+	// this is dangeorus
+	std::list<Tuple> recvQueue;
+
+    while (!killListeningThread) {
+    	//sleep(1);
+		//std::cout<<"Bolt::point2PointThread: one round"<<std::endl;		
+
+    	CRANE_Message msg;
+    	msg.msgType = MSG_READ_READY;
+
+    	size_t ret = robustWrite( connFd, (char*)&msg, sizeof(CRANE_Message) );
+    	if(ret <= 0){
+    		std::cout<<"Bolt::point2PointThread: socket is down1"<<std::endl;
+			//return;
+			sleep(1);
+			continue;
+    	}
+
+    	size_t length = 0;
+    	ret = robustRead( connFd, (char*)&length, sizeof(size_t) );
+		if(ret <= 0){
+    		std::cout<<"Bolt::point2PointThread: socket is down2"<<std::endl;
+			//return;
+			sleep(1);
+			continue;
+    	}
+
+    	char * buffer = new char[length];
+    	ret = splitRead( connFd, buffer, length );
+    	if(ret <= 0){
+    		std::cout<<"Bolt::point2PointThread: socket is down3"<<std::endl;
+			//return;
+			sleep(1);
+			continue;
+    	}
+
+    	recvQueue.clear();
+    	readTupleQueueFromBuffer(recvQueue, buffer);
+
+    	delete [] buffer;
+    	
+    	std::unique_lock<std::mutex> locker( tupleQueueLock );	
+    	tupleQueue.splice( tupleQueue.end(), recvQueue, recvQueue.begin(), recvQueue.end() );
+        tupleQueueCV.notify_all();
+    }
+
+    close(connFd);
+}
+
+void Bolt::readTupleQueueFromBuffer( std::list<Tuple> & recvQueue, char * buffer ){
+	if( numOfElemsInTuple <= 0 ){
+		std::cout<<"Bolt::readTupleQueueFromBuffer: tuple contains no elems"<<std::endl;
+	}
+
+	std::stringstream ss(buffer);
+	std::string item;
+
+	int count = 0;
+	Tuple tuple;
+	while( std::getline(ss, item) ){
+		count++;
+		tuple.addElement(item);
+		if(count % numOfElemsInTuple == 0){
+			recvQueue.push_back( tuple );
+			tuple.elements.clear();
+		}
+	}
+}
+
+//done
+//each subscribe task has one thread. my bolt send grouped tuples to them
+void Bolt::emitTupleThread(int * boltNum, int * taskNum){
+	TupleQueue * myQueue = emitQueues[*boltNum][*taskNum];
+	uint32_t connFD = subscriptors[*boltNum].tasks[*taskNum].connectionFD;
+	//std::cout<<"Bolt::emitTupleThread: emitting thread "<<*boltNum<<" "<<*taskNum<<" ready."<<std::endl;
+
+	std::list<Tuple> sendQueue;
+	while( !killEmittingThread ){
+		//sleep(1);
+		//std::cout<<"Bolt::emitTupleThread: one message"<<std::endl;		
+		
+		//read readySignal from connFD 
+		CRANE_Message msg;
+		int ret = read (connFD, &msg, sizeof(CRANE_Message));
+		if(ret == 0){
+			std::cout<<"Bolt::emitTupleThread: socket is down"<<std::endl;
+			//return;
+			sleep(1);
+			continue;
+		}
+		
+		if(msg.msgType != MSG_READ_READY){
+			std::cout<<"Bolt::emitTupleThread: read message is not ready msg. Other bolt sent wrong data"<<std::endl;
+			sleep(1);
+			continue;	
+		}
+
+		//read Tuples from myQueue
+		sendQueue.clear();
+		pullFromEmitQueue( sendQueue, myQueue );
+		
+		//prepare buffer
+		int numOfElems = 0; 
+		if( !sendQueue.empty() )
+			numOfElems = sendQueue.begin()->getNumElements();
+		if( numOfElems == 0 ){
+			std::cout<<"Bolt::emitTupleThread: tuple contains zero elems"<<std::endl;
+			sleep(1);
+			continue;
+		}
+
+		std::stringstream ss;
+		for(auto it = sendQueue.begin(); it != sendQueue.end(); it++ ){
+			for(int i=0; i < numOfElems; i++){
+				ss << it->getElement(i) << std::endl;
+			}
+		}
+
+		const std::string tmp = ss.str();
+		const char* cstr = tmp.c_str();
+
+		size_t length = std::strlen(cstr) + 1;	//for the /0 of cstr
+		char * buffer = new char[length];
+		std::memcpy( buffer, cstr, length );
+
+		//write tuple count to connFD
+		ret = write( connFD, &length, sizeof(size_t));
+		if( ret <= 0 ){
+			std::cout<<"Bolt::emitTupleThread: socket is down"<<std::endl;
+			//return;
+			sleep(1);
+			continue;
+		}
+		
+		//write buffer
+		ret = splitWrite( connFD, buffer, length);
+		if( ret <= 0 ){
+			std::cout<<"Bolt::emitTupleThread: socket is down"<<std::endl;
+			//return;
+			sleep(1);
+			continue;
+		}
+
+		delete [] buffer;
+	}
+
+	close(connFD);
+	std::cout<<"Bolt::emitTupleThread: emitting thread "<<*boltNum<<" "<<*taskNum<<" cleanning up."<<std::endl;
+}
+
+//done
+void Bolt::pullFromEmitQueue( std::list<Tuple>& sendQueue, TupleQueue* myQueue ){
+	std::unique_lock<std::mutex> locker( myQueue->lock );
+
+	while( myQueue->queue.empty() ){
+		//std::cout << "wait" << std::endl;
+		myQueue->cv.wait( locker );
+	}
+
+	sendQueue.splice( sendQueue.begin(), myQueue->queue, myQueue->queue.begin(), myQueue->queue.end() );
+}
+
+/*
+void Bolt::emit(Tuple& tuple) {
+	if (subscriptors.size() == 0) {
+		std::cout << boltId << " - " << taskId <<" - Noone to emit to!" << std::endl;
+		return;
+	}
+
+	std::vector<uint32_t> connFDs;
+
+	for (int i = 0; i < subscriptors.size(); ++i) {
+		for (int j = 0; j < subscriptors.at(i).tasks.size(); ++j) {
+			connFDs .push_back(subscriptors.at(i).tasks.at(j).connectionFD);
+		}
+	}
+
+	assert(connFDs.size() > 0);
+	//std::cout << "emiting tuple: " << tuple.getSingleStringComa() << std::endl;
+	CRANE_TupleMessage msg;
+
+	std::string str2Send = tuple.getSingleString();
+
+	memset(&msg,0, sizeof(CRANE_TupleMessage));
+    str2Send.copy(msg.buffer,str2Send.length(),0);
+	
+	for (int i = 0; i < connFDs.size(); ++i) {
+        write(connFDs.at(i), (char*)&msg, sizeof(CRANE_TupleMessage));
+	}
+	//std::cout << "emiting tuple: " << tuple.getSingleStringComa() << std::endl;
+}
+*/
+
+//done
+//emit tuple to each subscribing bolt, but only one task
+void Bolt::emit(Tuple& tuple) {
+	if (subscriptors.size() == 0) {
+		std::cout << "Spout::emit: Emiting but bolt subscribing me" << std::endl;
+		sleep(1);
+		return;
+	}
+	//select queue
+	for(int i=0; i < subscriptors.size(); i++){
+		if( subscriptors[i].tasks.size() == 0 ){
+			std::cout << "Spout::emit: Emiting but bolt has no task" << std::endl;
+			sleep(1);
+			break;
+		}
+		int j = rand() % subscriptors[i].tasks.size();
+
+		//put to queue, and notify all
+		addToTupleQueue( emitQueues[i][j], tuple );
+	}
+}
+
+//done
+void Bolt::addToTupleQueue(TupleQueue * tupleQueue, Tuple & tuple){
+	std::unique_lock<std::mutex> locker( tupleQueue->lock );
+    tupleQueue->queue.push_back(tuple);
+    tupleQueue->cv.notify_all();
+}
+
+/*
+CRANE_TupleMessage msg;
+memset(&msg,0, sizeof(CRANE_TupleMessage));
+
+std::string str2Send = tuple.getSingleString();
+str2Send.copy(msg.buffer,str2Send.length(),0);
+
+for (int i = 0; i < connFDs.size(); ++i)
+{
+    write(connFDs.at(i), (char*)&msg, sizeof(CRANE_TupleMessage));
+}*/
