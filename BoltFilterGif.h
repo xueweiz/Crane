@@ -11,9 +11,10 @@ class BoltFilterGif : public Bolt
 {
 
 private: 
-
+	FileSystem * myFs = NULL;
 public: 
 	BoltFilterGif(std::string name, unsigned int parallel_level);
+	BoltFilterGif(std::string name, unsigned int parallel_level, FileSystem * fs);
 	virtual ~BoltFilterGif();
 
 	virtual void run();

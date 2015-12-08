@@ -34,6 +34,15 @@ Supervisor::Supervisor(uint32_t port):
     listening.swap(th);
 }
 
+Supervisor::Supervisor(uint32_t port, FileSystem * fs):
+    port(port), fs(fs)
+{
+    taskIdSeed = rand() % 1000;
+
+    std::thread th(&Supervisor::createListeningThread, this);
+    listening.swap(th);
+}
+
 Supervisor::~Supervisor()
 {
 
@@ -52,6 +61,7 @@ void Supervisor::createListeningThread ()
     while(true)
     {
         size_t ret;
+        //std::cout<<"Supervisor::createListeningThread listening"<<std::endl;
         int connFd = listen_socket(listenFd);
 
         //logFile<<"listeningThread: someone is contacting me... "<< std::endl;
@@ -59,6 +69,7 @@ void Supervisor::createListeningThread ()
         CRANE_Message msg;
 
         ret = read(connFd, &msg, sizeof(CRANE_Message));
+        //std::cout<<"Supervisor::createListeningThread recv msg"<<std::endl;
 
         crane_MessageType msgType = msg.msgType;
 		crane_TaskType 	  taskType= msg.taskType;
@@ -91,12 +102,12 @@ void Supervisor::createListeningThread ()
             }
             else if (taskType == CRANE_TASK_FILTER_GIF)
             {
-                task = new BoltFilterGif("task_add_element",1);
+                task = new BoltFilterGif("task_add_element", 1, fs);
                 std::cout << "Creating filter gif" << std::endl;
             }
             else if (taskType == CRANE_TASK_COUNT_JPEG)
             {
-                task = new BoltCountJpeg("task_add_element",1);
+                task = new BoltCountJpeg("task_add_element", 1, fs);
                 std::cout << "Creating count jpeg" << std::endl;
             }
             else if (taskType == CRANE_TASK_COUNT_HTML)
@@ -145,9 +156,10 @@ void Supervisor::createListeningThread ()
             msg.port = task->getPort();
             msg.taskId = task->getTaskId();
 
+            //std::cout<<"Supervisor::createListeningThread send msg"<<std::endl;
             write(connFd, &msg, sizeof(CRANE_Message));
 
-            //std::cout << "Task created: " <<  msg.taskId << " - " << msg.boltId  << " at port " << msg.port << std::endl;
+            //std::cout << "Supervisor::createListeningThread: Task created: " <<  msg.taskId << " - " << msg.boltId  << " at port " << msg.port << std::endl;
         }
         else if (msgType == MSG_SUBSCRIPTION)
         {

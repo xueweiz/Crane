@@ -15,6 +15,13 @@ BoltCountJpeg::BoltCountJpeg(std::string name, unsigned int parallel_level)
 	type = CRANE_TASK_COUNT_JPEG;
 }
 
+BoltCountJpeg::BoltCountJpeg(std::string name, unsigned int parallel_level, FileSystem * inputFs)
+	: Bolt(name, parallel_level)
+{
+	type = CRANE_TASK_COUNT_JPEG;
+	myFs = inputFs;
+}
+
 BoltCountJpeg::~BoltCountJpeg()
 {
 
@@ -55,6 +62,8 @@ void BoltCountJpeg::run()
 	std::cout << "Total jpeg: " << counter << std::endl;
 	std::cout << "  done in: " << secondsPassed << " seconds"<< std::endl;
 	std::cout << "  which is: " << minutes << " min " <<seconds<<" secs"<< std::endl;
+
+
 
 	sleep(60*60);
 }

@@ -34,7 +34,7 @@ void Crane::addBolt(Bolt& bolt)
 	while (nodes.size() <= 1)
 	{
 		std::cout << "Crane::addBolt - No other machines present" << std::endl;
-		sleep(5);
+		sleep(2);
 		nodes = membership.getMembershipList();
 	}
 	
@@ -44,11 +44,10 @@ void Crane::addBolt(Bolt& bolt)
 		// uint32_t nodeId = (nodeIdx++) % (nodes.size());
 
 		std::string address = nodes.at(nodeId).ip_str;
+		//std::cout<<"Crane::addBolt connecting to "<<address<<std::endl;
 
 		int connectionToServer; //TCP connect
-
 		int ret = connect_to_server(address.c_str(), port, &connectionToServer);
-
 		while (ret != 0)
 		{
 			std::cout <<"Crane::addBolt Cannot connect to... "<<address<< std::endl; 
@@ -64,8 +63,10 @@ void Crane::addBolt(Bolt& bolt)
             msg.boltId   = bolt.getBoltId();
             msg.taskId   = i;
 
+	        //std::cout<<"Crane::addBolt sending msg"<<address<<std::endl;
 	        ret = write(connectionToServer, &msg, sizeof(CRANE_Message));
 
+	        //std::cout<<"Crane::addBolt recving msg"<<address<<std::endl;
 	        read(connectionToServer, &msg, sizeof(CRANE_Message));
 
 	        if (msg.msgType != MSG_CREATE_ACK)
@@ -74,6 +75,7 @@ void Crane::addBolt(Bolt& bolt)
 	        	exit(0);
 	        }
 
+	        //std::cout<<"Crane::addBolt msg good. updata local data"<<address<<std::endl;
 	        struct CRANE_TaskInfo newtask;
 	        newtask.ip_str = address;
 	        newtask.port = msg.port;

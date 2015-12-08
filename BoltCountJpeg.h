@@ -12,9 +12,11 @@ class BoltCountJpeg : public Bolt
 {
 
 private: 
-
+	FileSystem * myFs = NULL;
 public: 
+	
 	BoltCountJpeg(std::string name, unsigned int parallel_level);
+	BoltCountJpeg(std::string name, unsigned int parallel_level, FileSystem * fs);
 	virtual ~BoltCountJpeg();
 
 	virtual void run();

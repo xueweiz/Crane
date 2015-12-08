@@ -8,6 +8,7 @@
 #include <mutex>
 #include <condition_variable>
 
+#include "FileSystem.h"
 #include "crane_types.h"
 #include "Tuple.h"
 
@@ -49,9 +50,14 @@ protected:
 	CRANE_TaskType type;
 
 public: 
+	FileSystem* fs = NULL;
+
 	int numOfElemsInTuple = -1;	//need to be set at compile time
+	int numOfSubscriptor = 0;
+	void robustCreateQueue();
 
 	Bolt(std::string, unsigned int parallel_level);
+	Bolt(std::string, unsigned int parallel_level, FileSystem * fs);
 	virtual ~Bolt();
 
 	virtual void run();
@@ -98,7 +104,7 @@ public:
 	std::vector< std::vector< TupleQueue* > > emitQueues;
 	void pullFromEmitQueue( std::list<Tuple>& sendQueue, TupleQueue* myQueue );
 
-	void createEmitQueues();
+	int createEmitQueues();
 	void createEmittingThreads();
 
 	void point2PointThread(uint32_t port);	//tuple read

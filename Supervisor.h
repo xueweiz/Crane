@@ -27,7 +27,10 @@ private:
 	std::thread listening;
 
 public: 
+	FileSystem * fs;
+
 	Supervisor(uint32_t port);
+	Supervisor(uint32_t port, FileSystem * fs);
 	~Supervisor();
 
 	void run();

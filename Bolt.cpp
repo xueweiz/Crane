@@ -16,6 +16,17 @@ Bolt::Bolt(std::string name, uint32_t parallel_level) :
 	killEmittingThread = false;
 }
 
+Bolt::Bolt(std::string, unsigned int parallel_level, FileSystem * fs) :
+	name(name), parallel_level(parallel_level)
+{
+	std::cout << "set fs" << std::endl;
+	this->fs = fs;
+	std::cout << "fs set" << std::endl;
+	type = CRANE_TASK_EMPTY;
+	boltId = 9999999; // This should be assign by crane, if found this number is an error. 
+	killEmittingThread = false;
+}
+
 Bolt::~Bolt()
 {
 	killListeningThread = true;
@@ -287,13 +298,15 @@ void Bolt::listeningThread()
 
 
 
+void Bolt::robustCreateQueue(){
+	int queueNum = this->createEmitQueues();
+	while(queueNum != numOfSubscriptor){
+		sleep(1);
+		queueNum = this->createEmitQueues();
+	}
+}
 
-//std::vector< std::thread *> emitting;
-//bool killEmittingThread;
-//void emitTupleThread(int * boltNum, int * taskNum);	
-//std::vector< std::vector< TupleQueue* > > emitQueues;
-
-void Bolt::createEmitQueues(){
+int Bolt::createEmitQueues(){
 	emitQueues.clear();
 	int count = 0;
 	for(int i=0; i < subscriptors.size(); i++){
@@ -307,6 +320,7 @@ void Bolt::createEmitQueues(){
 	}
 
 	std::cout<<"Bolt::createEmitQueues: total queue "<<count<<std::endl;
+	return count;
 }
 void Bolt::createEmittingThreads(){
 	emittingThreads.clear();

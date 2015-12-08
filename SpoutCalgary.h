@@ -13,7 +13,7 @@ protected:
 
 	std::ifstream file;
 
-	int readFileTimes = 100;
+	int readFileTimes = 3;	//100 will finish in 3min47s. with 1-2-1 on 3 machine. 400 will be about 15min
 	int count = 0;
 	//virtual void communicationThread();
 

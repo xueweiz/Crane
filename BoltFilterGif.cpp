@@ -14,6 +14,13 @@ BoltFilterGif::BoltFilterGif(std::string name, unsigned int parallel_level)
 	type = CRANE_TASK_FILTER_GIF;
 }
 
+BoltFilterGif::BoltFilterGif(std::string name, unsigned int parallel_level, FileSystem * inputFs)
+	: Bolt(name, parallel_level)
+{
+	type = CRANE_TASK_FILTER_GIF;
+	myFs = inputFs;
+}
+
 BoltFilterGif::~BoltFilterGif()
 {
 
@@ -22,11 +29,13 @@ BoltFilterGif::~BoltFilterGif()
 void BoltFilterGif::run()
 {
 	numOfElemsInTuple = 1;
-	sleep(5);	//we assume subscribers will be ready in 2s.
-	this->createEmitQueues();
-	this->createEmittingThreads();
-	std::cout<<"BoltFilterGif::run: should have total ? threads"<<std::endl;
+	sleep(6);	//we assume subscribers will be ready in 2s.
+	
+	this->numOfSubscriptor = 4;
+	this->robustCreateQueue();
 
+	this->createEmittingThreads();
+	
 	while(!killRunThread){
 		Tuple tuple = this->getTuple();
 
