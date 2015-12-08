@@ -39,7 +39,7 @@ void BoltCountJpeg::run()
 		// Not found
 		if (pos != std::string::npos) {
 			counter++;
-			if(counter % 1000 == 0){
+			if(counter % 10000 == 0){
 				std::cout << "Total jpeg: " << counter << std::endl;
 			}
 		}
